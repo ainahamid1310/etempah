@@ -1,10 +1,11 @@
 @extends('layouts.backend_admin')
 
 @section('css')
+
 @endsection
 
 @section('js_themes')
-    <link href="/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="/vendor/dataTables.bootstrap4.min.css" rel="stylesheet">
     <script src="/global_assets/js/plugins/ui/fullcalendar/core/main.min.js"></script>
     <script src="/global_assets/js/plugins/ui/fullcalendar/daygrid/main.min.js"></script>
     <script src="/global_assets/js/plugins/ui/fullcalendar/timegrid/main.min.js"></script>
@@ -18,6 +19,7 @@
     <script src="/global_assets/js/plugins/visualization/d3/d3.min.js"></script>
     <script src="/global_assets/js/plugins/visualization/c3/c3.min.js"></script>
     <script src="/global_assets/js/demo_pages/datatables_basic.js"></script>
+
 @endsection
 
 @section('breadcrumb')

@@ -30,9 +30,9 @@
 
     <!-- Theme JS files -->
     @yield('js_themes')
-    <!-- /theme JS files -->   
-    
-    <script src="/global_assets/js/plugins/forms/selects/select2.min.js"></script>    
+    <!-- /theme JS files -->
+
+    <script src="/global_assets/js/plugins/forms/selects/select2.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
@@ -70,11 +70,10 @@
     <script src="/global_assets/js/demo_pages/datatables_sorting.js"></script>
     <script src="/global_assets/js/plugins/forms/selects/bootstrap_multiselect.js"></script>
     <script src="/global_assets/js/demo_pages/form_multiselect.js"></script>
-    <script src="/global_assets/js/demo_pages/form_dual_listboxes.js"></script>   
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
+    <script src="/global_assets/js/demo_pages/form_dual_listboxes.js"></script>
+    <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
     <!-- /theme JS files -->
+    
 <style>
     #time-fields {
     display: block;

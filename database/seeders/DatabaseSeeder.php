@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use RoleSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,5 +23,6 @@ class DatabaseSeeder extends Seeder
         $this->call(DepartmentRoomTableSeeder::class);
         $this->call(RolesAndPermissionsSeeder::class);
         $this->call(ProfilesTableSeeder::class);
+
     }
 }

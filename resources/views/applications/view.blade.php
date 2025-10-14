@@ -34,23 +34,23 @@
                 <li class="nav-item"><a href="#maklumat_bilik" class="nav-link rounded-round" data-toggle="tab">Permohonan
                         Tempahan Bilik</a></li>
                 <li class="nav-item"><a href="#maklumat_vc" class="nav-link rounded-round" data-toggle="tab">Permohonan
-                        Tempahan VC</a></li> 
+                        Tempahan VC</a></li>
             </ul>
-            
+
             <form method="post" enctype="multipart/form-data">
-          
+
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="maklumat_permohonan">
                         <fieldset>
                             <div class="card card bg-light">
-                            
-                                <div class="card-body" style="padding-left: 5rem;">                                   
+
+                                <div class="card-body" style="padding-left: 5rem;">
 
                                     <div class="d-flex py-2 border-bottom align-items-center">
                                         <strong class="me-3" style="min-width: 180px;">Nama Bilik/Lokasi</strong>
                                         <span>{{ $application?->room->nama ? :'-' }}</span>
-                                    </div>       
-                                              
+                                    </div>
+
                                     <br>
                                     <table class="table table-borderless">
                                         <thead>
@@ -58,16 +58,16 @@
                                                 <th style="width: 5%;">Batch ID</th>
                                                 <th style="width: 5%;">ID</th>
                                                 <th class="text-center" style="width: 20%;">Tarikh/Masa Mula</th>
-                                                <th class="text-center" style="width: 20%;">Tarikh/Masa Tamat</th>         
+                                                <th class="text-center" style="width: 20%;">Tarikh/Masa Tamat</th>
                                                 <th class="text-center" style="width: 20%;">Status Pemohonan Bilik</th>
                                                 <th class="text-center" style="width: 20%;">Status Pemohonan VC</th>
                                             </tr>
                                         </thead>
-                                        
+
                                         <tbody id="booking-rows"> {{-- ✅ only one tbody --}}
                                             @foreach ($applications as $app)
                                                 <tr class="booking-row align-middle">
-                                                    
+
                                                     <td>
                                                         #{{ $app->batch_id }}
                                                     </td>
@@ -88,13 +88,13 @@
                                                         <!-- pengguna -->
                                                         <span class="text-muted small">
                                                             @if(empty($app->applicationRoom))
-                                                            
+
                                                                 Tiada permohonan
-                                                      
+
                                                             @endif
                                                         </span>
-                                                        @if (!empty($contains)) 
-                                                            @if ($app->applicationRoom->status_room_id == '1')                                                            
+                                                        @if (!empty($contains))
+                                                            @if ($app->applicationRoom->status_room_id == '1')
                                                                 <span
                                                                     class="badge badge-primary">{{ $app->applicationRoom->statusRoom->status_pentadbiran }}</span>
                                                             @elseif($app->applicationRoom->status_room_id == '2' ||
@@ -117,7 +117,7 @@
                                                             @else
                                                                 <span
                                                                     class="badge badge-secondary">{{ $app->applicationRoom->statusRoom->status_pentadbiran ?? 'Tiada Permohonan' }}
-                                                                </span> 
+                                                                </span>
                                                             @endif
                                                         <!-- Admin     -->
                                                         @else
@@ -143,9 +143,9 @@
 
                                                         <span class="text-muted small">
                                                             @if(empty($app->applicationVc))
-                                                            
+
                                                                 Tiada permohonan
-                                                      
+
                                                             @endif
                                                         </span>
 
@@ -176,7 +176,7 @@
                                                                     class="badge badge-secondary">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
                                                             @endif
                                                         @else
-                                                            @if ($application->applicationVc?->status_vc_id == '1') 
+                                                            @if ($application->applicationVc?->status_vc_id == '1')
                                                                 <span
                                                                     class="badge badge-secondary">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
                                                             @elseif($application->applicationVc?->status_vc_id == '2')
@@ -213,11 +213,11 @@
                                     </table>
 
                                     <hr>
-                        
+
                                     <div class="d-flex py-2 border-bottom align-items-center">
                                         <strong class="me-3" style="min-width: 180px;">Tajuk Mesyuarat/Program</strong>
                                         <span class="text-muted">{{ $application->nama_mesyuarat ?: '-' }}</span>
-                                    </div>              
+                                    </div>
 
                                    @php
                                         $kategori_pengerusi_text = $application->kategori_pengerusi == '0'
@@ -225,10 +225,10 @@
                                             : $application->kategori_pengerusi;
                                     @endphp
 
-                                    <div class="d-flex py-2 border-bottom align-items-center">                                 
+                                    <div class="d-flex py-2 border-bottom align-items-center">
                                         <strong class="me-3" style="min-width: 180px;">Pengerusi</strong>
                                         <div class="flex-grow-1 text-muted">{{ $kategori_pengerusi_text }}</div>
-                                    </div>                                    
+                                    </div>
 
                                     <div class="alert alert-warning" role="alert" id="alert_bil_tempahan"
                                         style="display:none">
@@ -240,19 +240,19 @@
                                         <li>Had maksimum dikecualikan bagi Mesyuarat Pengurusan dan Mesyuarat
                                             <i>Post-Cabinet.</i>
                                         </li>
-                                    </div>                                 
+                                    </div>
 
                                     <div class="d-flex py-2 border-bottom align-items-center">
                                         <strong class="me-3" style="min-width: 180px;">Bil.Tempahan/Kehadiran</strong>
                                         <span class="text-muted">{{  $application->bilangan_tempahan ?: '-' }}</span>
-                                    </div> 
-                                
+                                    </div>
+
                                     <div class="d-flex py-2 border-bottom align-items-center">
                                         <strong class="me-3" style="min-width: 180px;">Tarikh Permohonan</strong>
                                         <span class="text-muted">{{ date('d-m-Y g:i A', strtotime($application->created_at)) }}</span>
-                                    </div>       
-                                              
-                            
+                                    </div>
+
+
                                 </div>
                             </div>
                         </fieldset>
@@ -268,7 +268,7 @@
 
                 </div>
 
-                <div class="tab-pane fade" id="maklumat_vc"> 
+                <div class="tab-pane fade" id="maklumat_vc">
                     @if (isset($application->applicationVc))
                         @include('applications.vc.view')
                     @else
@@ -533,7 +533,7 @@
             var form = $(this).closest("form");
             event.preventDefault();
             Swal.fire({
-                title: 'Adakah anda pasti?',
+                title: 'Adakah anda pasti ?',
                 showCancelButton: true,
                 confirmButtonColor: '#22bb33',
                 cancelButtonColor: '#d33',

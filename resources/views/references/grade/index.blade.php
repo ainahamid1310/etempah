@@ -87,7 +87,7 @@
             var form = $(this).closest("form");
             event.preventDefault();
             Swal.fire({
-                title: 'Adakah anda pasti?',
+                title: 'Adakah anda pasti index?',
                 showCancelButton: true,
                 confirmButtonColor: '#22bb33',
                 cancelButtonColor: '#d33',

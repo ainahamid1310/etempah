@@ -66,34 +66,33 @@ class ApplicationController extends Controller
     }
 
    public function checkAvailability(Request $request)
-{
-    $start = Carbon::createFromFormat('d/m/Y H:i', $request->start);
-    $end   = Carbon::createFromFormat('d/m/Y H:i', $request->end);
+    {
+        $start = Carbon::createFromFormat('d/m/Y H:i', $request->start);
+        $end   = Carbon::createFromFormat('d/m/Y H:i', $request->end);
 
-    $conflicts = \App\Models\Application::where('room_id', $request->room_id)
-        ->join('application_rooms', 'applications.id', '=', 'application_rooms.application_id')
-        ->whereIn('application_rooms.status_room_id', [2, 3, 6, 14])
-        ->get(['tarikh_mula', 'tarikh_hingga']);
+        $conflicts = \App\Models\Application::where('room_id', $request->room_id)
+            ->join('application_rooms', 'applications.id', '=', 'application_rooms.application_id')
+            ->whereIn('application_rooms.status_room_id', [2, 3, 6, 14])
+            ->get(['tarikh_mula', 'tarikh_hingga']);
 
-    $isClash = false;
+        $isClash = false;
 
-    foreach ($conflicts as $conflict) {
-        $conflictStart = Carbon::parse($conflict->tarikh_mula);
-        $conflictEnd   = Carbon::parse($conflict->tarikh_hingga);
+        foreach ($conflicts as $conflict) {
+            $conflictStart = Carbon::parse($conflict->tarikh_mula);
+            $conflictEnd   = Carbon::parse($conflict->tarikh_hingga);
 
-        // Rule overlap: clash kalau tempahan bertindih walaupun separuh
-        if ($start < $conflictEnd && $end > $conflictStart) {
-            $isClash = true;
-            break;
+            // Rule overlap: clash kalau tempahan bertindih walaupun separuh
+            if ($start < $conflictEnd && $end > $conflictStart) {
+                $isClash = true;
+                break;
+            }
         }
+
+        return response()->json(['available' => !$isClash]);
     }
 
-    return response()->json(['available' => !$isClash]);
-}
-
-
     public function store(ApplicationRequest $request)
-    {  
+    {
         // dd($request->all(), $request->allFiles());
         $roomId = $request->input('room');
         $isAuto = $request->input('is_auto');
@@ -102,8 +101,8 @@ class ApplicationController extends Controller
 
         $room = Room::find($roomId);
 
-        $room_users = $room->users; 
-        
+        $room_users = $room->users;
+
         $supervisorsRooms_email = $room_users->pluck('email')->toArray();
 
         // 1. Try to insert data
@@ -127,11 +126,11 @@ class ApplicationController extends Controller
                 $surat_emel_path = '/lampiran/' . $filename;
             }
 
-            foreach ($request->bookings as $booking) {          
+            foreach ($request->bookings as $booking) {
 
                 $mula = Carbon::parse($booking['start'])->format('Y-m-d H:i:s');
                 $tamat = Carbon::parse($booking['end'])->format('Y-m-d H:i:s');
-                
+
                 $application = Application::create([
                     'batch_id' => $batch->id,
                     'room_id' => $roomId,
@@ -145,9 +144,9 @@ class ApplicationController extends Controller
                     'perakuan' => $request->perakuan,
                     'created_at' => now(),
                     'created_by' => Auth::id(),
-                ]);                     
+                ]);
 
-                if($request->is_auto == 'Y'){                   
+                if($request->is_auto == 'Y'){
 
                     ApplicationRoom::create([
                         'application_id' => $application->id,
@@ -170,15 +169,15 @@ class ApplicationController extends Controller
                         'catatan' => $request->catatan_room,
                         'created_by' => Auth::id(),
                     ]);
-                }           
+                }
 
                 if ($request->vc_selected == '1' || $request->vc_selected == 'on' || $request->is_auto == 'N') {
-              
+
                     if($request->is_auto == 'N'){
                         $status_vc_id = '2';
                     }else{
                         $status_vc_id = '1';
-                    }      
+                    }
 
                     ApplicationVc::create([
                         'application_id'   => $application->id,
@@ -190,7 +189,7 @@ class ApplicationController extends Controller
                         'created_at'       => now(),
                         'created_by'       => Auth::id(),
                     ]);
-                }               
+                }
             }
 
             $application->load(['applicationRoom', 'applicationVc']);
@@ -200,8 +199,8 @@ class ApplicationController extends Controller
                 'tarikh_list' => $tarikh_list,
             ];
 
-            $application_id = $application->id;         
-            
+            $application_id = $application->id;
+
             // $msg = 'Permohonan tempahan anda telah dihantar untuk diproses.';
 
             // return redirect('/application/show/' . encrypt($application_id))->with('successMessage', $msg);
@@ -209,8 +208,8 @@ class ApplicationController extends Controller
         }); // ✅ closes DB::transaction
 
         // 2. Try sending email
-        // Set data      
-         
+        // Set data
+
         $application = $results['application'];
         $tarikh_list = $results['tarikh_list'];
 
@@ -219,7 +218,7 @@ class ApplicationController extends Controller
             !empty($application->applicationRoom) => 'bilik',
             !empty($application->applicationVc) => 'VC',
             default => 'undefined 01: Ralat Permohonan',
-        };     
+        };
 
          //collect data
             $applications=  Application::where('batch_id', $application->batch_id)->get();
@@ -240,7 +239,7 @@ class ApplicationController extends Controller
 
             $senarai_tarikh = $tarikh_list;
         //End Collect date
-        
+
         $action_pemohon = 'dihantar untuk diproses';
         $action_penyelia = 'untuk tindakan';
 
@@ -279,7 +278,7 @@ class ApplicationController extends Controller
 
         if (!empty($application->applicationVc)) {
             $apply_vc = 1;
-            $applicationVc = $application->applicationVc;  
+            $applicationVc = $application->applicationVc;
 
             $status_vc_id = $applicationVc->status_vc_id ?? '';
             $status_vc = $applicationVc->statusVc->status_pemohon ?? '';
@@ -314,7 +313,7 @@ class ApplicationController extends Controller
 
             $email_penyeliaVc = User::role('approver-vc')->pluck('email')->toArray();
 
-           
+
         }
 
          if (!empty($application)) {
@@ -327,7 +326,7 @@ class ApplicationController extends Controller
                     // 'subject_penyelia' => 'Tindakan: Permohonan Baru Tempahan ' . $tempahan . ' di ' . $application->room->nama . ' pada ' . $tarikh_mula . ' Sehingga ' . $tarikh_hingga,
                     // 'subject_penyelia_vc' => 'Tindakan: Permohonan Baru Tempahan ' . $tempahan . ' di ' . $application->room->nama . ' pada ' . $tarikh_mula . ' Sehingga ' . $tarikh_hingga,
                     'subject_pemohon' => 'Makluman: Permohonan Baru Tempahan ',
-                    'subject_penyelia' => 'Tindakan: Permohonan Baru Tempahan Bilik',                 
+                    'subject_penyelia' => 'Tindakan: Permohonan Baru Tempahan Bilik',
                     'subject_penyelia_vc' => 'Tindakan: Permohonan Baru Tempahan VC',
                     'action_pemohon' => $action_pemohon,
                     'action_penyelia' => $action_penyelia,
@@ -341,7 +340,7 @@ class ApplicationController extends Controller
                     'bilik' => $application->room->nama,
                     'status_bilik' => $status_bilik,
                     'status_bilik_id' => $status_bilik_id,
-                    'tarikh_list' => $tarikh_list,                   
+                    'tarikh_list' => $tarikh_list,
                     'tarikh_mula' => '',
                     'tarikh_hingga' => '',
                     'nama_pengerusi' => $nama_pengerusi,
@@ -353,7 +352,7 @@ class ApplicationController extends Controller
                     'status_vc' => $status_vc,
                     'link_webex' => $link_webex,
                     'id_webex' => $id_webex,
-                    'senarai_tarikh' => $senarai_tarikh,     
+                    'senarai_tarikh' => $senarai_tarikh,
                     'password_webex' => $password_webex,
                     'password_expired' => $password_expired,
                     'catatan_penyelia_vc' => $catatan_penyelia_vc,
@@ -362,7 +361,7 @@ class ApplicationController extends Controller
                     'nama_aplikasi' => $nama_aplikasi,
                     'catatan_vc' => $catatan_vc,
                     'vc_komen_ditolak' => $vc_komen_ditolak,
-                    'note' => '',                   
+                    'note' => '',
                 );
             }
 
@@ -376,7 +375,7 @@ class ApplicationController extends Controller
         } catch (\Exception $e) {
             \Log::error("Email to pemohon failed: " . $e->getMessage());
             session()->flash('email_error', 'Notifikasi e-mel tidak dapat dihantar.  Sila maklumkan Pentadbir Sistem.');
-        }        
+        }
 
         if ($room->email_status == 'Y') {
             try {
@@ -410,7 +409,7 @@ class ApplicationController extends Controller
         // 3. Return success + email info
         // return redirect('/application/show/' . encrypt($application->id))
         //     ->with('successMessage', 'Permohonan berjaya dihantar' . $errorMessage);
-        
+
             return redirect('/application/show/' . encrypt($application->id))
         ->with('successMessage', 'Permohonan berjaya dihantar.  Pemohon akan menerima notifikasi e-mel.');
 
@@ -418,8 +417,8 @@ class ApplicationController extends Controller
             \Log::error('Store failed: ' . $e->getMessage());
             return back()->with('error', 'Ralat semasa menyimpan data.');
         }
-    }          
-    
+    }
+
     public function createvc($batch_id)
     {
         $applications = Application::where('batch_id', $batch_id)->get();
@@ -436,9 +435,9 @@ class ApplicationController extends Controller
 
         return view('applications.create_vc', compact('applications','application', 'departments', 'rooms', 'positions', 'user'));
     }
-        
+
     public function storevc(Request $request, $batch_id)
-    {      
+    {
         $request->validate(
             [
                 'vc_selected' => 'required',
@@ -455,9 +454,9 @@ class ApplicationController extends Controller
                 'perakuan.required' => 'Perakuan diperlukan',
             ]
         );
-        
+
         $applications = Application::where('batch_id', $batch_id)->get();
-        $application = $applications->first(); 
+        $application = $applications->first();
         $user = User::where('id', Auth::id())->first();
 
         if (!$application) {
@@ -470,7 +469,7 @@ class ApplicationController extends Controller
         $supervisorsRooms_email = $room_users->pluck('email')->toArray();
 
         // check jika sudah ada ApplicationVc untuk application pertama
-        $applicationVcExists = ApplicationVc::where('application_id', $application->id)->exists();     
+        $applicationVcExists = ApplicationVc::where('application_id', $application->id)->exists();
 
         if ($applicationVcExists) {
             return redirect()->back()->with('errorMessage', 'Permohonan VC telah wujud');
@@ -929,9 +928,9 @@ class ApplicationController extends Controller
 
     public function recreate($batch)
     {
-        
+
         $batch = decrypt($batch);
-        
+
         $application = Application::where('batch_id',$batch)->first();
         $applications = Application::where('batch_id',$batch)->get();
         // dd($applications);
@@ -1105,7 +1104,7 @@ class ApplicationController extends Controller
         } elseif (!empty($application->applicationVc)) {
             $tempahan = 'VC';
         }
-       
+
         // $tarikh_mula = date('d-m-Y g:i A', strtotime($application->tarikh_mula));
         // $tarikh_hingga = date('d-m-Y g:i A', strtotime($application->tarikh_hingga));
 
@@ -1124,29 +1123,29 @@ class ApplicationController extends Controller
                     $app->applicationVc->status_vc_id = '5'; // contoh
                     $app->applicationVc->save();
                 }
-            } 
+            }
             elseif ($request->act == 'batal_vc') {
 
                 if (!empty($app->applicationVc)) {
                     $app->applicationVc->status_vc_id = '5';
                     $app->applicationVc->save();
                 }
-            
-            } 
+
+            }
             elseif ($request->act == 'batal_room') {
 
-                if (!empty($app->applicationRoom)) {         
+                if (!empty($app->applicationRoom)) {
                     $app->applicationRoom->status_room_id = '7';
                     $app->applicationRoom->save();
                 }
 
-            } 
+            }
             elseif ($request->act == 'mohon_batal') {
 
                 if (!empty($app->applicationRoom)) {
                     $app->applicationRoom->status_room_id = '3';
                     $app->applicationRoom->save();
-                }            
+                }
                 if (!empty($app->applicationVc)) {
                     if ($app->applicationVc->status_vc_id == '1' || $app->applicationVc->status_vc_id == '2' || $app->applicationVc->status_vc_id == '3' || $app->applicationVc->status_vc_id == '12') {
                         $app->applicationVc->status_vc_id = '5';
@@ -1158,7 +1157,7 @@ class ApplicationController extends Controller
         //End update status
 
         //collect data
-        $applicationfirst =  Application::where('id', $application->id)->first();        
+        $applicationfirst =  Application::where('id', $application->id)->first();
 
         //Collect date
             $tarikh_list = [];
@@ -1191,7 +1190,7 @@ class ApplicationController extends Controller
             $subject_penyelia = 'Makluman: Pembatalan Tempahan ' . $application->room->nama;
             $action_pemohon = 'dibatalkan oleh pemohon';
             $action_penyelia = 'telah dibatalkan oleh pemohon';
-            $action_penyelia2 = '';       
+            $action_penyelia2 = '';
             $status_bilik = $applicationfirst->applicationRoom->statusRoom->status_pemohon;
             $status_bilik_id = $applicationfirst->applicationRoom->status_room_id;
             $catatan_room = $applicationfirst->applicationRoom->catatan;
@@ -1212,7 +1211,7 @@ class ApplicationController extends Controller
             $catatan_room = '';
             $catatan_room_penyelia = '';
         } elseif ($request->act == 'batal_room') {
-        
+
             // $application->applicationRoom->status_room_id = '7';
             // $application->applicationRoom->save();
             $msg = 'Pembatalan telah berjaya dikemaskini.';
@@ -1319,7 +1318,7 @@ class ApplicationController extends Controller
             'bilik' => $application->room->nama,
             'status_bilik' => $status_bilik,
             'status_bilik_id' => $status_bilik_id,
-            'senarai_tarikh' => $senarai_tarikh,           
+            'senarai_tarikh' => $senarai_tarikh,
             'nama_pengerusi' => $nama_pengerusi,
             'bilangan_tempahan' => $applicationfirst->bilangan_tempahan,
             'catatan_room' => $catatan_room,
@@ -1377,7 +1376,7 @@ class ApplicationController extends Controller
 
         return redirect('/application/' . $tag)->with('successMessage', $msg);
     }
-  
+
     public function search()
     {
         $rooms = Room::orderBy('nama', 'ASC')->get();

@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use Spatie\Permission\Contracts\Role;
+// use Spatie\Permission\Contracts\Role;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Role as ModelsRole;
 
 class UserController extends Controller
@@ -167,7 +168,9 @@ class UserController extends Controller
 
         DB::table('model_has_roles')->where('model_id', $user->id)->delete();
 
-        $user->assignRole($request->input('role'));
+        // $user->assignRole($request->input('role'));
+        $roleName = Role::find(3)->name;
+        $user->assignRole($roleName);
 
         // $positions = Position::get();
         // $departments = Department::get();

@@ -10,8 +10,7 @@
 @endsection
 
 @section('js_extensions')
-    {{-- Sweet Alert --}}
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 @endsection
 
 @section('content')
@@ -41,7 +40,7 @@
                 @endif
             @endif
 
-            <form class="confirm" action="/admin/application_room/result/{{ $application->batch_id }}" method="POST">
+            <form id="myForm" action="/admin/application_room/result/{{ $application->batch_id }}" method="POST">
                 {{ csrf_field() }}
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="maklumat_permohonan">
@@ -53,21 +52,21 @@
                                 <h6 class="card-title">
                                     <a data-toggle="collapse" class="text-default" href="#maklumat_mesyuarat">Maklumat
                                         Permohonan
-                                    </a> 
+                                    </a>
                                 </h6>
                             </div>
 
                             <div id="maklumat_mesyuarat" class="collapse show">
-                                
+
                                 <div class="card bg-light">
 
                                     <div class="card-body">
-                                      
+
                                             <div class="card-body">
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Nama Bilik/Lokasi</strong>
                                                     <span>{{ $application?->room->nama ? :'-' }}</span>
-                                                </div>  
+                                                </div>
                                                 <br>
                                                 <table class="table table-borderless">
                                                     <thead>
@@ -75,12 +74,12 @@
                                                             <th style="width: 5%;">Batch ID</th>
                                                             <th style="width: 5%;">ID</th>
                                                             <th class="text-center" style="width: 20%;">Tarikh/Masa Mula</th>
-                                                            <th class="text-center" style="width: 20%;">Tarikh/Masa Tamat</th>         
+                                                            <th class="text-center" style="width: 20%;">Tarikh/Masa Tamat</th>
                                                             <th class="text-center" style="width: 20%;">Status</th>
                                                         </tr>
                                                     </thead>
-                                                    
-                                                    <tbody id="booking-rows"> 
+
+                                                    <tbody id="booking-rows">
                                                         @foreach ($applications as $app)
                                                             <tr class="booking-row align-middle">
 
@@ -101,9 +100,9 @@
                                                                 </td>
 
                                                                 <td class="text-center">
-                                                                    
+
                                                                     @if (!empty($contains))
-                                                                        @if ($app->applicationRoom->status_room_id == '1')                                                            
+                                                                        @if ($app->applicationRoom->status_room_id == '1')
                                                                             <span
                                                                                 class="badge badge-primary">{{ $app->applicationRoom->statusRoom->status_pentadbiran }}</span>
                                                                         @elseif($app->applicationRoom->status_room_id == '2' ||
@@ -126,7 +125,7 @@
                                                                         @else
                                                                             <span
                                                                                 class="badge badge-secondary">{{ $app->applicationRoom->statusRoom->status_pentadbiran ?? 'Tiada Permohonan' }}
-                                                                            </span> 
+                                                                            </span>
                                                                         @endif
                                                                     @else
                                                                         @if ($app->applicationRoom?->status_room_id == '1')
@@ -211,7 +210,7 @@
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Tajuk Mesyuarat/Program</strong>
                                                     <span class="text-muted">{{ $application->nama_mesyuarat ?: '-' }}</span>
-                                                </div>              
+                                                </div>
 
                                                 @php
                                                     $kategori_pengerusi_text = $application->kategori_pengerusi == '0'
@@ -219,10 +218,10 @@
                                                         : $application->kategori_pengerusi;
                                                 @endphp
 
-                                                <div class="d-flex py-2 border-bottom align-items-center">                                 
+                                                <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Pengerusi</strong>
                                                     <div class="flex-grow-1 text-muted">{{ $kategori_pengerusi_text }}</div>
-                                                </div>                                    
+                                                </div>
 
                                                 <div class="alert alert-warning" role="alert" id="alert_bil_tempahan"
                                                     style="display:none">
@@ -234,17 +233,17 @@
                                                     <li>Had maksimum dikecualikan bagi Mesyuarat Pengurusan dan Mesyuarat
                                                         <i>Post-Cabinet.</i>
                                                     </li>
-                                                </div>                                 
+                                                </div>
 
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Bil.Tempahan/Kehadiran</strong>
                                                     <span class="text-muted">{{  $application->bilangan_tempahan ?: '-' }}</span>
-                                                </div> 
-                                            
+                                                </div>
+
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Tarikh Permohonan</strong>
                                                     <span class="text-muted">{{ date('d-m-Y g:i A', strtotime($application->created_at)) }}</span>
-                                                </div>   
+                                                </div>
                                             </div>
                                         <!-- </div> -->
 
@@ -254,12 +253,6 @@
                             </div>
 
                             <div class="card-header">
-                                <!-- <h6 class="card-title">
-                                    <a class="text-default" data-toggle="collapse" href="#maklumat_terperinci">Maklumat
-                                        Terperinci
-                                        Mesyuarat/Program
-                                    </a>
-                                </h6> -->
                                 <h6 class="card-title">
                                     <a data-toggle="collapse" class="text-default" href="#maklumat_terperinci">Maklumat
                                         Terperinci
@@ -269,7 +262,7 @@
 
                             <div id="maklumat_terperinci" class="collapse show">
                                 <div class="card bg-light">
-                                    <div class="card-body">                                    
+                                    <div class="card-body">
 
                                         <!-- <div style="padding-left: 4rem;">      -->
 
@@ -282,17 +275,17 @@
                                                 @else
                                                     <span class="text-muted">Tiada lampiran</span>
                                                 @endif
-                                            </div>      
+                                            </div>
 
                                             <div class="d-flex py-2 border-bottom align-items-center">
                                                 <strong class="me-3" style="min-width: 150px;">Kategori Mesyuarat</strong>
                                                 <span class="text-muted">
-                                                    {{ $application->applicationRoom->kategori_mesyuarat == '1' 
-                                                        ? 'Mesyuarat Pengurusan Tertinggi' 
+                                                    {{ $application->applicationRoom->kategori_mesyuarat == '1'
+                                                        ? 'Mesyuarat Pengurusan Tertinggi'
                                                         : 'Mesyuarat Lain-lain' }}
                                                 </span>
-                                            </div>              
-                                        
+                                            </div>
+
                                             @php
                                                 $penganjur = $application->applicationRoom->penganjur;
                                                 $penganjurLabel = match($penganjur) {
@@ -308,7 +301,7 @@
                                                 <strong class="me-3" style="min-width: 150px;">Penganjur</strong>
                                                 <span class="text-muted">{{ $penganjurLabel }}</span>
                                             </div>
-                    
+
                                             @if(in_array($penganjur, ['BERSAMA', 'LUAR']))
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 150px;">Nama Penganjur</strong>
@@ -332,9 +325,9 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                            </div>            
+                                            </div>
 
-                                            <div class="d-flex py-2 border-bottom align-items-center">                  
+                                            <div class="d-flex py-2 border-bottom align-items-center">
                                                 <strong class="me-3" style="min-width: 150px;">Sajian</strong>
                                                 <div class="flex-grow-1 text-muted">
                                                     {{ $application->applicationRoom->sajian ?: '-' }}
@@ -373,8 +366,8 @@
                                                     </div>
                                                 </div>
                                             @endif
-                        
-                                            <div class="d-flex py-2 border-bottom align-items-start">                    
+
+                                            <div class="d-flex py-2 border-bottom align-items-start">
                                                 <strong class="me-3" style="min-width: 150px;">Catatan</strong>
                                                 <div class="flex-grow-1 text-muted white-space-prewrap">
                                                     {{ $application->applicationRoom->catatan ?: '-' }}
@@ -395,13 +388,13 @@
                                             @endif
 
                                         <!-- </div> -->
-                                        
+
                                     </div>
                                 </div>
                             </div>
-                    
+
                         </div>
-                    
+
                     </div>
 
                     <div class="tab-pane fade" id="maklumat_bilik">
@@ -422,21 +415,22 @@
                         </div>
                     @endif
                 @endif
-                
+
                 <div class="card-footer text-center">
                     <button class="btn btn-sm bg-secondary" onclick="history.back()" type="button">
                         Kembali</button>
                     @if ($application->applicationRoom->status_room_id == '1')
-                        
-                            <form class="delete" method="POST">
-                                {{ csrf_field() }}
-                                <input type="hidden" name="_method" value="POST">
-                                <input type="hidden" name="button" value="2">
-                                <button type="submit" class="btn btn-primary btn-sm submit-btn" 
-                                    @disabled($applicationCount > 0)>
-                                    Lulus
-                                </button>
-                            </form>                        
+
+                       {{-- <form action="/admin/application_room/result/{{ $application->id }}" method="POST" class="approval-form">
+                            {{ csrf_field() }} --}}
+                            <input type="hidden" name="_method" value="POST">
+                            <input type="hidden" name="button" value="2">
+                            <button type="button" id="btnSubmit" class="btn btn-primary btn-sm confirm-submit"
+
+                                @disabled($applicationCount > 0)>
+                                Lulus
+                            </button>
+                        {{-- </form> --}}
 
                         <button type="button" name="button" value="4" data-toggle="modal"
                             data-target="#modal_tolak" class="btn btn-danger btn-sm"
@@ -449,30 +443,16 @@
                         <button type="button" name="button" value="12" data-toggle="modal"
                             data-target="#modal_batal" class="btn btn-warning btn-sm">Batal</button>
                     @elseif($application->applicationRoom->status_room_id == '3')
-                        <!-- <a href="/admin/application_room/result/{{ $application->id }}"><button type="submit"
-                                name="button5" value="5" class="btn btn-primary btn-sm">Lulus
-                                Pembatalan</button></a>
-                        <form class="delete" method="POST">
-                            {{ csrf_field() }}
-                            <input type="hidden" name="_method" value="POST">
-                            <input type="hidden" name="button" value="6">
-                            <button type="submit" class="btn btn-danger btn-sm submit-btn">
-                                Tolak Pembatalan
-                            </button>
-                        </form> -->
-                        <form action="/admin/application_room/result/{{ $application->id }}" method="POST">
-                            @csrf
+
                             {{-- Butang Lulus Pembatalan --}}
-                            <button type="submit" name="button" value="5" class="btn btn-primary btn-sm">
+                            <button type="button" name="button" value="5" class="btn btn-primary btn-sm">
                                 Lulus Pembatalan
                             </button>
-
                             {{-- Butang Tolak Pembatalan --}}
-                            <button type="submit" name="button" value="6" class="btn btn-danger btn-sm">
+                            <button type="button" name="button" value="6" class="btn btn-danger btn-sm">
                                 Tolak Pembatalan
                             </button>
-                        </form>
-
+                        {{-- </form> --}}
 
                     @endif
 
@@ -537,14 +517,14 @@
 
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-link" data-dismiss="modal">Tutup</button>
-                                
-                                @if($application->applicationRoom->status_room_id == '1')                           
-                                <button type="submit" name="button" value="13" 
+
+                                @if($application->applicationRoom->status_room_id == '1')
+                                <button type="submit" name="button" value="13"
                                     class="btn bg-success">Hantar</button>
                                 @endif
 
-                                @if($application->applicationRoom->status_room_id == '2')                           
-                                <button type="submit" name="button" value="12" 
+                                @if($application->applicationRoom->status_room_id == '2')
+                                <button type="submit" name="button" value="12"
                                     class="btn bg-success">Hantar</button>
                                 @endif
                                 <!-- <a href="/admin/application_room/result/{{ $application->id }}"><button type="submit" name="button" value="4" class="btn btn-danger btn-sm">Tolak</button></a> -->
@@ -624,24 +604,47 @@
 @endsection
 
 @section('script')
-    <script>
-        $('.submit-btn').click(function(event) {
-            var form = $(this).closest("form");
-            event.preventDefault();
-            Swal.fire({
-                title: 'Adakah anda pasti?',
-                showCancelButton: true,
-                confirmButtonColor: '#22bb33',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya',
-                cancelButtonText: 'Tidak',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
+<script>
 
-            })
+    document.addEventListener('DOMContentLoaded', function () {
+    const btnSubmit = document.getElementById('btnSubmit');
+    const form = document.getElementById('myForm');
+
+    if (!btnSubmit) return;
+
+        btnSubmit.addEventListener('click', function (e) {
+        e.preventDefault(); // elak form auto submit
+
+        Swal.fire({
+            title: 'Hantar kelulusan?',
+            text: 'Pastikan semua maklumat permohonan betul sebelum diluluskan.',
+            // icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hantar!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+        if (result.isConfirmed) {
+            // setkan input hidden "button" = 2 sebelum submit
+            let hiddenButton = form.querySelector('input[name="button"]');
+            if (hiddenButton) {
+            hiddenButton.value = 2;
+            } else {
+            // kalau tiada, cipta baru
+            hiddenButton = document.createElement('input');
+            hiddenButton.type = 'hidden';
+            hiddenButton.name = 'button';
+            hiddenButton.value = 2;
+            form.appendChild(hiddenButton);
+            }
+
+            form.submit(); // hantar form
+        }
         });
+    });
+    });
+</script>
+
+    <script>
 
         function webexSelected() {
             var webex_ya = document.getElementById("ya");
@@ -756,3 +759,5 @@
         }
     </script>
 @endsection
+
+

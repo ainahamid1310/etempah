@@ -39,7 +39,7 @@
                 feedback.style.display = 'none';
             }
         }
-        
+
         // Semua input, select, textarea biasa
         document.querySelectorAll('input, select, textarea').forEach(function (el) {
             el.addEventListener('input', removeError);
@@ -54,8 +54,8 @@
                 select.next('.select2-container').find('.select2-selection').removeClass('is-invalid');
                 select.closest('.form-group').find('.invalid-feedback').hide();
             });
-        }    
-        
+        }
+
         // SEMAKAN SUSUNAN TARIKH BILA TARIKH DITUKAR
         document.querySelectorAll('input[name^="bookings"]').forEach(function (el) {
                 el.addEventListener('change', function (e) {
@@ -79,9 +79,9 @@
         //         errorIcon.remove();
         //     }
         // }
-        
+
     });
-        
+
 </script>
 
 @endsection
@@ -100,7 +100,7 @@
         align-items: center;
         justify-content: center;
 
-        
+
     }
         a.disabled {
         pointer-events: none;
@@ -122,7 +122,7 @@
         pointer-events: none;
         opacity: 0.6;
         cursor: not-allowed;
-    }   
+    }
         .nav-link.disabled {
         pointer-events: none;   /* elak boleh klik */
         opacity: 0.6;           /* bagi pudar */
@@ -131,23 +131,32 @@
     .error-border {
     border: 2px solid red !important;
     background-color: #ffe6e6; /* light red */
-}
+    }
 
 </style>
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            {{-- @foreach ($errors->all() as $error) --}}
+                <li>Sila lengkapkan borang permohonan.</li>
+            {{-- @endforeach --}}
+        </ul>
+    </div>
+@endif
 
     <body>
         <div class="card">
-         
+
             <div class="card-body">
-              
+
                 @if(session('email_error'))
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
                         {{ session('email_error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
-           
-                    <div class="tab-content">        
+
+                    <div class="tab-content">
 
                         <div class="card">
 
@@ -155,7 +164,7 @@
                                 <h5 class="mb-0">Permohonan Tempahan</h5>
                             </div>
 
-                            <div class="card-body">                            
+                            <div class="card-body">
 
                                 <ul class="nav nav-pills nav-justified mb-3" role="tablist">
                                     <li class="nav-item">
@@ -179,7 +188,7 @@
                                 <form id="applicationForm" method="post" action="{{ url('/application/applicant/create') }}" enctype="multipart/form-data" novalidate>
                                     @csrf
                                     <div class="tab-content">
-                                        <!-- Tab 1 -->                                        
+                                        <!-- Tab 1 -->
                                         <div class="tab-pane fade show active" id="maklumat_permohonan" role="tabpanel">
                                             <div class="form-group row">
                                                 <label class="col-md-3 col-form-label text-md-right">Nama Bilik/Lokasi</label>
@@ -200,7 +209,7 @@
                                                         <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
                                                     @enderror
                                                 </div>
-                                                
+
                                             </div>
                                             <div class="alert alert-danger border-0 alert-dismissible"
                                                 id="div_alert_bilik_manual" style="display: none">
@@ -222,7 +231,7 @@
                                             <div class="alert alert-warning border-0 alert-dismissible" id="div_alert_wifimiti" style="display: none">
                                                 <button type="button" class="close" data-dismiss="alert"></button>
                                                 <strong>Makluman : </strong> Sekiranya memerlukan Voucher <b>MITIWIFI_Guest</b>, sila emelkan permohonan kepada urki@miti.gov.my
-                                            </div>                                       
+                                            </div>
 
                                             <input type="hidden" id="is_auto" name="is_auto" value="{{ old('is_auto') }}">
                                                     <input type="hidden" id="is_upload" name="is_upload"
@@ -234,23 +243,23 @@
                                                 <thead>
                                                     <tr>
                                                         <th class="text-center" style="width: 25%;">Tarikh/Masa Mula</th>
-                                                        <th class="text-center" style="width: 25%;">Tarikh/Masa Tamat</th>         
+                                                        <th class="text-center" style="width: 25%;">Tarikh/Masa Tamat</th>
                                                         <th style="width: 20%;">Ketersediaan/Tindakan</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="booking-rows">
                                                     @php
-                                                        $oldBookings = old('bookings', []); 
+                                                        $oldBookings = old('bookings', []);
                                                     @endphp
 
                                                     @if(count($oldBookings))
                                                         @foreach($oldBookings as $i => $booking)
                                                         <tr class="booking-row align-middle">
-                                                            <td>       
+                                                            <td>
                                                                 <div class="input-group">
-                                                                    <input type="text" 
-                                                                        name="bookings[{{ $i }}][start]" 
-                                                                        class="form-control start-input" 
+                                                                    <input type="text"
+                                                                        name="bookings[{{ $i }}][start]"
+                                                                        class="form-control start-input"
                                                                         value="{{ old("bookings.$i.start") }}"
                                                                         placeholder="Pilih tarikh mula">
                                                                     <span class="input-group-text">
@@ -268,10 +277,10 @@
                                                             </td>
                                                             <td>
                                                                 <div class="input-group">
-                                                                
-                                                                    <input type="text" 
-                                                                        name="bookings[{{ $i }}][end]" 
-                                                                        class="form-control end-input" 
+
+                                                                    <input type="text"
+                                                                        name="bookings[{{ $i }}][end]"
+                                                                        class="form-control end-input"
                                                                         value="{{ old("bookings.$i.end") }}"
                                                                         placeholder="Pilih tarikh tamat">
                                                                         <span class="input-group-text">
@@ -285,7 +294,7 @@
                                                                             </span>
                                                                         </div>
                                                                     @enderror
-                                                                </div>                                                                
+                                                                </div>
                                                             </td>
 
                                                             <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
@@ -296,7 +305,7 @@
                                                                     <i class="fas fa-trash-alt fa-sm"></i>
                                                                 </a>
                                                             </td>
-                                                                                                                        
+
                                                         </tr>
 
                                                         @endforeach
@@ -305,9 +314,9 @@
                                                         <tr class="booking-row align-middle">
                                                             <td>
                                                                 <div class="input-group">
-                                                                    <input type="text" 
-                                                                        name="bookings[0][start]" 
-                                                                        class="form-control start-input" 
+                                                                    <input type="text"
+                                                                        name="bookings[0][start]"
+                                                                        class="form-control start-input"
                                                                         value=""
                                                                         placeholder="Pilih tarikh mula">
 
@@ -316,9 +325,9 @@
                                                             </td>
                                                             <td>
                                                                 <div class="input-group">
-                                                                    <input type="text" 
-                                                                        name="bookings[0][end]" 
-                                                                        class="form-control end-input" 
+                                                                    <input type="text"
+                                                                        name="bookings[0][end]"
+                                                                        class="form-control end-input"
                                                                         value=""
                                                                         placeholder="Pilih tarikh tamat">
 
@@ -333,7 +342,7 @@
                                                             </td>
                                                         </tr>
                                                     @endif
-                                                  
+
                                                 </tbody>
                                             </table>
 
@@ -343,8 +352,8 @@
                                                 class="d-inline-flex align-items-center gap-2">
                                                     <i class="fas fa-plus-circle fa-lg"></i>Tambah Tarikh
                                                 </a>
-                                            </div>  
-                                
+                                            </div>
+
                                             <div class="form-group row">
                                                 <label for="nama_mesyuarat"
                                                     class="col-md-3 col-form-label text-md-right">{{ __('Tajuk Mesyuarat/Program') }}</label>
@@ -355,7 +364,7 @@
                                                             <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
                                                         @enderror
                                                 </div>
-                                            </div>                                            
+                                            </div>
 
                                             <div class="form-group row">
                                                 <label for="kategori_pengerusi"
@@ -430,7 +439,7 @@
                                                     class="col-md-3 col-form-label text-md-right">{{ __('Bil.Tempahan/Kehadiran') }}</label>
                                                 <div class="col-md-2">
                                                     <input id="bil_tempah" type="text" class="form-control @error('bilangan_tempahan') is-invalid @enderror"
-                                                        name="bilangan_tempahan" value="{{ old('bilangan_tempahan') }}"                                                   
+                                                        name="bilangan_tempahan" value="{{ old('bilangan_tempahan') }}"
                                                         autocomplete="bilangan_tempahan"
                                                         placeholder="Bil. Orang">
                                                         @error('bilangan_tempahan')
@@ -438,7 +447,7 @@
                                                         @enderror
 
                                                 </div>
-                                            </div>                                      
+                                            </div>
 
                                             <div class="text-center">
                                                 <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya</a>
@@ -487,7 +496,7 @@
                                                     </button>
                                                 </div>
                                             </div>
-                                          
+
                                         </div>
                                     </div>
 
@@ -495,11 +504,11 @@
                             </div>
                         </div>
 
-                    </div>          
-                
+                    </div>
+
             </div>
 
-        </div>                                                    
+        </div>
 
     </body>
 
@@ -561,7 +570,7 @@
 
 @section('script')
 
-<script>  
+<script>
     let suppressAvailabilityCheck = false;
 
     function kategoriPengerusi() {
@@ -631,10 +640,10 @@
         if (vc_selected.checked == true) {
             form_vc.style.display = "block";
         } else {
-            form_vc.style.display = "none";           
+            form_vc.style.display = "none";
         }
-        
-    }  
+
+    }
 
     function markInvalidSequenceRows() {
         console.log("1. Validasi susunan tarikh sedang dijalankan...");
@@ -735,7 +744,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      
+
         // init semua yang sedia ada masa load
         document.querySelectorAll('.start-input, .end-input').forEach(input => {
             flatpickr(input, {
@@ -760,7 +769,7 @@
                 tabLink.classList.add('active');
                 tabPane.classList.add('show', 'active');
             }
-        }    
+        }
 
         // Format tarikh
         function formatTarikhDMY(tarikh) {
@@ -879,7 +888,7 @@
         }
 
         function checkAvailabilityIfReady(row) {
-            
+
             console.log("5. checkAvailabilityIfReady...");
             if (suppressAvailabilityCheck) return;
 
@@ -931,11 +940,11 @@
 
                 statusSpan.innerHTML = `<i class="fas fa-exclamation-triangle text-danger fa-lg" title="${message}"></i><span style="font-size: 9px; color: red;margin-left: 4px;">${message}</span>`;
                 statusSpan.setAttribute('data-status', 'date-error');
-           
+
                 return;
             }
 
-            // ✅ Semakan 2: Start ≤ End 
+            // ✅ Semakan 2: Start ≤ End
             if (startDate && endDate && startDate >= endDate) {
                 const message = "Tarikh tamat mesti selepas atau sama dengan tarikh mula.";
                 startInput?.classList.add('error-border');
@@ -948,7 +957,7 @@
             }
 
             // ✅ Semakan 3: masa tamat mesti > masa mula
-         
+
             if (startDate && endDate) {
                 const startTime = startDate.getHours() * 60 + startDate.getMinutes();
                 const endTime = endDate.getHours() * 60 + endDate.getMinutes();
@@ -1003,7 +1012,7 @@
 
                     // highlight input
                     const rowError = rows[i];
-                    rowError.querySelector('.start-input')?.classList.add('error-border');                   
+                    rowError.querySelector('.start-input')?.classList.add('error-border');
 
                     return;
                 }
@@ -1071,7 +1080,7 @@
                 checkAvailability(roomId, start, end, row); // Jalankan sebenar selepas 300ms
             }, 300);
         }
-    
+
         function checkAvailability(roomId, start, end, row) {
             console.log("5. checkAvailabilityIfReady...");
             const message = "Bilik tidak tersedia.";
@@ -1102,14 +1111,14 @@
                     statusSpan.innerHTML = `
                         <i class="fas fa-check-circle text-success fa-lg"></i><span style="font-size: 9px; color: green; margin-left: 4px;">${message}</span>`;
                     statusSpan.setAttribute("data-status", "available"); // ✅
-                } 
+                }
                 else if (data.unavailable_dates?.length) {
                     const formattedList = data.unavailable_dates.map(formatTarikhDMY).join('<br>');
 
                     const message = `Bilik tidak tersedia (xoo1)`;
-                    statusSpan.innerHTML = `<i class="fas fa-exclamation-triangle text-danger fa-lg" title="${message}"></i><span style="font-size: 9px; color: red; margin-left: 4px;">${message}</span>`; 
-                    statusSpan.setAttribute("data-status", "unavailable"); // ✅            
-                } 
+                    statusSpan.innerHTML = `<i class="fas fa-exclamation-triangle text-danger fa-lg" title="${message}"></i><span style="font-size: 9px; color: red; margin-left: 4px;">${message}</span>`;
+                    statusSpan.setAttribute("data-status", "unavailable"); // ✅
+                }
                 else {
                     statusSpan.innerHTML = `
                         <i class="fas fa-exclamation-circle text-danger fa-lg"
@@ -1121,7 +1130,7 @@
 
         initFlatpickrForRow(firstRow);
         bindChangeEventToRow(firstRow);
-      
+
         document.getElementById('addRow').addEventListener('click', function () {
             const newRow = firstRow.cloneNode(true);
 
@@ -1158,7 +1167,7 @@
         });
 
         // ===================== SELECT2 & ROOM CHANGE ===================== //
-        
+
         $('#room').on('select2:select change', function () {
             const selected = $(this).find('option:selected');
 
@@ -1276,7 +1285,7 @@
 
     });
 
-    
+
 </script>
 
 @endsection
