@@ -31,10 +31,11 @@
 @endsection
 
 @section('content')
+
 <style>
-.fc td, .fc th {
-  cursor: pointer;
-}
+    .fc td, .fc th {
+    cursor: pointer;
+    }
 </style>
 
     @role('super-admin|approver-room|approver-vc')
@@ -262,7 +263,24 @@
         </div>
 
     </div>
+
 @endsection
 
-@section('script')
+@section('scripts')
+    <script>
+    console.log('announcement');
+    document.addEventListener("DOMContentLoaded", function() {
+        const hasSeenPopup = localStorage.getItem("hasSeenAnnouncement");
+
+        if (!hasSeenPopup) {
+            const modalEl = document.getElementById('announcementModal');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        document.getElementById('btnCloseAnnouncement').addEventListener('click', function() {
+            localStorage.setItem("hasSeenAnnouncement", "true");
+        });
+    });
+    </script>
 @endsection

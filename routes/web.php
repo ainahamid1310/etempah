@@ -37,6 +37,7 @@ use App\Http\Middleware\IsAdmin;
 Route::get('/department2', [DependentDropdownController::class, 'index']);
 Route::get('/searchSection/{id}', [DependentDropdownController::class, 'searchSection']);
 Route::get('/searchLevel/{id}',[DependentDropdownController::class, 'searchLevel']);
+Route::view('/announcement', 'announcement');
 
 Route::get('/', function () {
     return view('welcome');
@@ -98,7 +99,7 @@ Route::group(
         Route::get('/application/destroy/{applicant}',[ApplicationController::class,'destroy']);
 
         Route::post('/check-availability', [ApplicationController::class, 'checkAvailability'])->name('check.availability');
-        Route::get('/application/{batch}', [ApplicationController::class,'index']);        
+        Route::get('/application/{batch}', [ApplicationController::class,'index']);
 
         // Function Copy
         Route::get('/application/recreate/{application}',[ApplicationController::class,'recreate']);

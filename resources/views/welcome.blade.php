@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 
 <head>
     <meta charset="utf-8">
@@ -27,6 +27,83 @@
     <!-- Theme JS files -->
     <script src="assets/js/app.js"></script>
     <!-- /theme JS files -->
+
+    {{-- SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+    /* Popup rasmi MITI */
+    .swal2-popup.announcement-popup {
+        width: 50em !important;
+        padding: 2em !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 1.05rem;
+        text-align: center;
+    }
+
+    /* Tajuk */
+    .swal2-title.announcement-title {
+        font-size: 1.8rem !important;
+        font-weight: 700;
+        color: #003366; /* biru MITI */
+    }
+
+    /* Isi teks */
+    .swal2-html-container {
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+
+    /* Butang “Faham” */
+    .swal2-confirm.announcement-button {
+        background-color: #003366 !important;
+        color: #fff !important;
+        border-radius: 8px !important;
+        padding: 10px 25px !important;
+        font-weight: 600;
+    }
+
+    /* Logo MITI */
+    .swal2-header img.miti-logo {
+        width: 80px;
+        margin-bottom: 10px;
+    }
+
+/* Buang pseudo-element tambahan */
+.swal2-icon::before,
+.swal2-icon::after,
+.swal2-icon i::before,
+.swal2-icon i::after {
+    content: none !important;
+}
+
+/* Bulatan saiz sederhana */
+.swal2-icon.swal2-info {
+    width: 3.1em !important;
+    height: 3.1em !important;
+    border: 0.15em solid #3fc3ee !important;
+    border-radius: 50% !important;
+    color: #3fc3ee !important;
+    background: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* kecilkan ikon “i” SVG asal SweetAlert2 */
+.swal2-icon.swal2-info svg {
+    width: 10% !important;   /* asalnya 80–90% */
+    height: 10% !important;
+}
+
+/* Buang ikon FontAwesome tambahan kalau ada */
+.swal2-icon.swal2-info i,
+.swal2-icon.swal2-info .fa,
+.swal2-icon.swal2-info .fas {
+    display: none !important;
+}
+
+    </style>
 
 </head>
 
@@ -282,9 +359,12 @@
             </div>
         </div>
         <!-- /Contact form modal -->
+
+
+
     </div>
     <div class="text-center">
-        &copy;2022-2023 MITI Malaysia
+        &copy;2022-2025 MITI Malaysia
     </div>
 </body>
 
@@ -299,4 +379,26 @@
             x.type = "password";
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+    Swal.fire({
+        title: 'Makluman!',
+        html: `
+            <p>Sistem sedang dalam proses <b>naik taraf dan penambahbaikan</b> untuk meningkatkan prestasi dan keselamatan sistem.</p>
+            <p>Gangguan sementara mungkin berlaku antara <b>20–22 Oktober 2025</b>. Kami memohon maaf atas sebarang kesulitan yang timbul.</p>
+            <p>Terima kasih atas kerjasama anda.</p>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Tutup',
+        allowOutsideClick: false,
+        customClass: {
+            popup: 'announcement-popup',
+            title: 'announcement-title',
+            confirmButton: 'announcement-button'
+        }
+    });
+});
+
+
+
 </script>

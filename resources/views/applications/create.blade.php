@@ -1082,19 +1082,22 @@
         }
 
         function checkAvailability(roomId, start, end, row) {
-            console.log("5. checkAvailabilityIfReady...");
-            const message = "Bilik tidak tersedia.";
-            if (!start || !end || !roomId) {
-                // console.log('Tidak cukup data 2, checkAvailability tidak dipanggil');
-                const statusSpan = row.querySelector('.availability-status');
+            console.log("🔍 checkAvailability:", { roomId, start, end });
+
+            const statusSpan = row.querySelector('.availability-status');
+            const messageDefault = "Bilik tidak tersedia.";
+
+            if (!roomId || !start || !end) {
                 if (statusSpan) {
                     statusSpan.innerHTML = '';
                     statusSpan.removeAttribute('data-status');
                 }
                 return;
             }
-            const statusSpan = row.querySelector('.availability-status');
-            statusSpan.innerHTML = '<i class="fas fa-spinner fa-spin text-muted fa-sm" title="Menyemak..."></i>';
+
+            statusSpan.innerHTML = `
+                <i class="fas fa-spinner fa-spin text-muted fa-sm" title="Menyemak..."></i>
+            `;
 
             fetch(CHECK_AVAILABILITY_URL, {
                 method: "POST",
@@ -1104,27 +1107,33 @@
                 },
                 body: JSON.stringify({ room_id: roomId, start, end })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error("HTTP error " + response.status);
+                return response.json();
+            })
             .then(data => {
-                if (data.available) {
-                     const message = `Bilik tersedia`;
-                    statusSpan.innerHTML = `
-                        <i class="fas fa-check-circle text-success fa-lg"></i><span style="font-size: 9px; color: green; margin-left: 4px;">${message}</span>`;
-                    statusSpan.setAttribute("data-status", "available"); // ✅
-                }
-                else if (data.unavailable_dates?.length) {
-                    const formattedList = data.unavailable_dates.map(formatTarikhDMY).join('<br>');
+                console.log("✅ Response:", data);
 
-                    const message = `Bilik tidak tersedia (xoo1)`;
-                    statusSpan.innerHTML = `<i class="fas fa-exclamation-triangle text-danger fa-lg" title="${message}"></i><span style="font-size: 9px; color: red; margin-left: 4px;">${message}</span>`;
-                    statusSpan.setAttribute("data-status", "unavailable"); // ✅
-                }
-                else {
+                if (data.available === true) {
+                    const message = "Bilik tersedia";
                     statusSpan.innerHTML = `
-                        <i class="fas fa-exclamation-circle text-danger fa-lg"
-                      ></i><span style="font-size: 9px; color: red;margin-left: 4px;">${message}</span>`;
-                    statusSpan.setAttribute("data-status", "unavailable"); // ✅
+                        <i class="fas fa-check-circle text-success fa-lg"></i>
+                        <span style="font-size: 9px; color: green; margin-left: 4px;">${message}</span>`;
+                    statusSpan.setAttribute("data-status", "available");
+                } else {
+                    const message = data.message || messageDefault;
+                    statusSpan.innerHTML = `
+                        <i class="fas fa-exclamation-triangle text-danger fa-lg"></i>
+                        <span style="font-size: 9px; color: red; margin-left: 4px;">${message}</span>`;
+                    statusSpan.setAttribute("data-status", "unavailable");
                 }
+            })
+            .catch(error => {
+                console.error("❌ checkAvailability error:", error);
+                statusSpan.innerHTML = `
+                    <i class="fas fa-exclamation-circle text-danger fa-lg"></i>
+                    <span style="font-size: 9px; color: red; margin-left: 4px;">Ralat semakan</span>`;
+                statusSpan.setAttribute("data-status", "unavailable");
             });
         }
 

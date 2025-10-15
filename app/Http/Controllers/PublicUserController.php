@@ -13,9 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
-
-
-
 class PublicUserController extends Controller
 {
     public function create()

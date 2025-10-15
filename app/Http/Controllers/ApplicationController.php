@@ -65,30 +65,62 @@ class ApplicationController extends Controller
         return view('applications.create', compact('departments', 'rooms', 'positions', 'user'));
     }
 
-   public function checkAvailability(Request $request)
+    public function checkAvailability(Request $request)
     {
-        $start = Carbon::createFromFormat('d/m/Y H:i', $request->start);
-        $end   = Carbon::createFromFormat('d/m/Y H:i', $request->end);
+        try {
+            $roomId = $request->input('room_id');
+            $startInput = $request->input('start');
+            $endInput = $request->input('end');
 
-        $conflicts = \App\Models\Application::where('room_id', $request->room_id)
-            ->join('application_rooms', 'applications.id', '=', 'application_rooms.application_id')
-            ->whereIn('application_rooms.status_room_id', [2, 3, 6, 14])
-            ->get(['tarikh_mula', 'tarikh_hingga']);
+            \Log::info("CheckAvailability Request", compact('roomId', 'startInput', 'endInput'));
 
-        $isClash = false;
-
-        foreach ($conflicts as $conflict) {
-            $conflictStart = Carbon::parse($conflict->tarikh_mula);
-            $conflictEnd   = Carbon::parse($conflict->tarikh_hingga);
-
-            // Rule overlap: clash kalau tempahan bertindih walaupun separuh
-            if ($start < $conflictEnd && $end > $conflictStart) {
-                $isClash = true;
-                break;
+            if (empty($roomId) || empty($startInput) || empty($endInput)) {
+                return response()->json([
+                    'available' => false,
+                    'message' => 'Input tidak lengkap.'
+                ]);
             }
-        }
+            // Tarikh frontend format: dd/mm/yyyy HH:mm
+            $tarikhMulaBaru = Carbon::createFromFormat('d/m/Y H:i', $startInput);
+            $tarikhHinggaBaru = Carbon::createFromFormat('d/m/Y H:i', $endInput);
 
-        return response()->json(['available' => !$isClash]);
+            // Ambil semua tempahan bilik dengan status aktif
+            $tempahanSediaAda = Application::select('id', 'tarikh_mula','tarikh_hingga')->where('room_id', $roomId)
+                ->whereHas('applicationRoom', function ($q) {
+                    $q->whereIn('status_room_id', [2, 6, 14]);
+                })
+                ->get();
+
+            \Log::info("Jumpa " . $tempahanSediaAda . "tempahan sedia ada");
+
+            $isClash = false;
+
+            foreach ($tempahanSediaAda as $tempahan) {
+                $mulaSediaAda = Carbon::parse($tempahan->tarikh_mula);
+                $tamatSediaAda = Carbon::parse($tempahan->tarikh_hingga);
+
+                // Semak jika bertindih (clash)
+                if ($tarikhMulaBaru < $tamatSediaAda && $tarikhHinggaBaru > $mulaSediaAda) {
+                    $isClash = true;
+                    break;
+                }
+            }
+
+            return response()->json([
+                'available' => !$isClash,
+                'clash' => $isClash,
+                'message' => $isClash
+                    ? 'Bilik tidak tersedia pada masa tersebut.'
+                    : 'Bilik tersedia.'
+            ]);
+
+        } catch (\Throwable $e) {
+            \Log::error("CheckAvailability error: " . $e->getMessage());
+            return response()->json([
+                'available' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(ApplicationRequest $request)
