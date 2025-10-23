@@ -10,7 +10,8 @@
 @endsection
 
 @section('js_extensions')
- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    {{-- Sweet Alert --}}
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endsection
 
 @section('content')
@@ -40,7 +41,8 @@
                 @endif
             @endif
 
-            <form id="myForm" action="/admin/application_room/result/{{ $application->batch_id }}" method="POST">
+            <form method="post" enctype="multipart/form-data"
+                    action="/admin/application_room/edit/{{ $application->batch_id }}">
                 {{ csrf_field() }}
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="maklumat_permohonan">
@@ -52,21 +54,21 @@
                                 <h6 class="card-title">
                                     <a data-toggle="collapse" class="text-default" href="#maklumat_mesyuarat">Maklumat
                                         Permohonan
-                                    </a>
+                                    </a> 
                                 </h6>
                             </div>
 
                             <div id="maklumat_mesyuarat" class="collapse show">
-
+                                
                                 <div class="card bg-light">
 
                                     <div class="card-body">
-
+                                      
                                             <div class="card-body">
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Nama Bilik/Lokasi</strong>
                                                     <span>{{ $application?->room->nama ? :'-' }}</span>
-                                                </div>
+                                                </div>  
                                                 <br>
                                                 <table class="table table-borderless">
                                                     <thead>
@@ -74,12 +76,12 @@
                                                             <th style="width: 5%;">Batch ID</th>
                                                             <th style="width: 5%;">ID</th>
                                                             <th class="text-center" style="width: 20%;">Tarikh/Masa Mula</th>
-                                                            <th class="text-center" style="width: 20%;">Tarikh/Masa Tamat</th>
+                                                            <th class="text-center" style="width: 20%;">Tarikh/Masa Tamat</th>         
                                                             <th class="text-center" style="width: 20%;">Status</th>
                                                         </tr>
                                                     </thead>
-
-                                                    <tbody id="booking-rows">
+                                                    
+                                                    <tbody id="booking-rows"> 
                                                         @foreach ($applications as $app)
                                                             <tr class="booking-row align-middle">
 
@@ -100,13 +102,13 @@
                                                                 </td>
 
                                                                 <td class="text-center">
-
+                                                                    
                                                                     @if (!empty($contains))
-                                                                        @if ($app->applicationRoom->status_room_id == '1')
+                                                                        @if ($app->applicationRoom->status_room_id == '1')                                                            
                                                                             <span
                                                                                 class="badge badge-primary">{{ $app->applicationRoom->statusRoom->status_pentadbiran }}</span>
                                                                         @elseif($app->applicationRoom->status_room_id == '2' ||
-                                                                            $app->applicationRoom->status_room_id == '14')
+                                                                            $app->applicationRoom->statusRoom->status_pentadbiran == '14')
                                                                             <span
                                                                                 class="badge badge-success">{{ $application->applicationRoom->statusRoom->status_pentadbiran }}</span>
                                                                         @elseif($app->applicationRoom->status_room_id == '3')
@@ -125,7 +127,7 @@
                                                                         @else
                                                                             <span
                                                                                 class="badge badge-secondary">{{ $app->applicationRoom->statusRoom->status_pentadbiran ?? 'Tiada Permohonan' }}
-                                                                            </span>
+                                                                            </span> 
                                                                         @endif
                                                                     @else
                                                                         @if ($app->applicationRoom?->status_room_id == '1')
@@ -146,61 +148,7 @@
                                                                     @endif
 
                                                                 </td>
-                                                                <!-- <td class="text-center">
-                                                                    @if (!empty($contains))
-
-                                                                        @if ($application->applicationVc?->status_vc_id == '1' || $application->applicationVc?->status_vc_id == '2')
-                                                                            <span
-                                                                                class="badge badge-primary">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '3')
-                                                                            <span
-                                                                                class="badge badge-success">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '5' ||
-                                                                            $application->applicationVc?->status_vc_id == '10' ||
-                                                                            $application->applicationVc?->status_vc_id == '11')
-                                                                            <span
-                                                                                class="badge badge-danger">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '4' && is_null($application->applicationVc?->komen_ditolak))
-                                                                        {{-- diasingkan untuk CR Admin VC pada 5 Jun 2024--}}
-                                                                            <span
-                                                                                class="badge badge-danger">Ditolak Oleh Pentadbir Bilik</span>
-
-                                                                        @elseif($application->applicationVc?->status_vc_id == '4' && !is_null($application->applicationVc?->komen_ditolak))
-                                                                        {{-- diasingkan untuk CR Admin VC --}}
-                                                                            <span
-                                                                                class="badge badge-danger">Ditolak Oleh Pentadbir VC</span>
-                                                                        @else
-                                                                            <span
-                                                                                class="badge badge-secondary">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
-                                                                        @endif
-                                                                    @else
-                                                                        @if ($application->applicationVc?->status_vc_id == '1' || $application->applicationVc?->status_vc_id == '2')
-                                                                            <span
-                                                                                class="badge badge-primary">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '3')
-                                                                            <span
-                                                                                class="badge badge-success">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '5' ||
-                                                                            $application->applicationVc?->status_vc_id == '10' ||
-                                                                            $application->applicationVc?->status_vc_id == '11')
-                                                                            <span
-                                                                                class="badge badge-danger">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
-
-                                                                        @elseif($application->applicationVc?->status_vc_id == '4' && is_null($application->applicationVc?->komen_ditolak))
-                                                                        {{-- diasingkan untuk CR Admin VC pada 5 Jun 2024--}}
-                                                                            <span
-                                                                                class="badge badge-danger">Ditolak Oleh Pentadbir Bilik</span>
-
-                                                                        @elseif($application->applicationVc?->status_vc_id == '4' && !is_null($application->applicationVc?->komen_ditolak))
-                                                                        {{-- diasingkan untuk CR Admin VC --}}
-                                                                            <span
-                                                                                class="badge badge-danger">Ditolak Oleh Pentadbir VC</span>
-                                                                        @else
-                                                                            <span
-                                                                                class="badge badge-secondary">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
-                                                                        @endif
-                                                                    @endif
-                                                                </td> -->
+                                                                
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
@@ -210,7 +158,7 @@
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Tajuk Mesyuarat/Program</strong>
                                                     <span class="text-muted">{{ $application->nama_mesyuarat ?: '-' }}</span>
-                                                </div>
+                                                </div>              
 
                                                 @php
                                                     $kategori_pengerusi_text = $application->kategori_pengerusi == '0'
@@ -218,10 +166,10 @@
                                                         : $application->kategori_pengerusi;
                                                 @endphp
 
-                                                <div class="d-flex py-2 border-bottom align-items-center">
+                                                <div class="d-flex py-2 border-bottom align-items-center">                                 
                                                     <strong class="me-3" style="min-width: 180px;">Pengerusi</strong>
                                                     <div class="flex-grow-1 text-muted">{{ $kategori_pengerusi_text }}</div>
-                                                </div>
+                                                </div>                                    
 
                                                 <div class="alert alert-warning" role="alert" id="alert_bil_tempahan"
                                                     style="display:none">
@@ -233,17 +181,24 @@
                                                     <li>Had maksimum dikecualikan bagi Mesyuarat Pengurusan dan Mesyuarat
                                                         <i>Post-Cabinet.</i>
                                                     </li>
-                                                </div>
+                                                </div>                                 
 
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Bil.Tempahan/Kehadiran</strong>
-                                                    <span class="text-muted">{{  $application->bilangan_tempahan ?: '-' }}</span>
-                                                </div>
-
+                                                    <!-- <span class="text-muted">{{  $application->bilangan_tempahan ?: '-' }}</span> -->
+                                                     <input id="bil_tempah" type="text" class="form-control @error('bilangan_tempahan') is-invalid @enderror"
+                                                        name="bilangan_tempahan" value="{{ old('bilangan_tempahan', $application->bilangan_tempahan) }}"                                                  
+                                                        autocomplete="bilangan_tempahan"
+                                                        placeholder="Bil. Orang">
+                                                        @error('bilangan_tempahan')
+                                                            <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
+                                                        @enderror
+                                                </div> 
+                                            
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 180px;">Tarikh Permohonan</strong>
                                                     <span class="text-muted">{{ date('d-m-Y g:i A', strtotime($application->created_at)) }}</span>
-                                                </div>
+                                                </div>   
                                             </div>
                                         <!-- </div> -->
 
@@ -253,6 +208,12 @@
                             </div>
 
                             <div class="card-header">
+                                <!-- <h6 class="card-title">
+                                    <a class="text-default" data-toggle="collapse" href="#maklumat_terperinci">Maklumat
+                                        Terperinci
+                                        Mesyuarat/Program
+                                    </a>
+                                </h6> -->
                                 <h6 class="card-title">
                                     <a data-toggle="collapse" class="text-default" href="#maklumat_terperinci">Maklumat
                                         Terperinci
@@ -262,30 +223,19 @@
 
                             <div id="maklumat_terperinci" class="collapse show">
                                 <div class="card bg-light">
-                                    <div class="card-body">
+                                    <div class="card-body">                                    
 
                                         <!-- <div style="padding-left: 4rem;">      -->
 
                                             <div class="d-flex py-2 border-bottom align-items-center">
-                                                <strong class="me-3" style="min-width: 150px;">Lampiran</strong>
-                                                @if ($application->applicationRoom->surat)
-                                                        <a href="{{ asset($application->applicationRoom->surat) }}" target="_blank" class="btn btn-sm btn-info">
-                                                            <i class="fas fa-paperclip"></i> Lampiran
-                                                        </a>
-                                                @else
-                                                    <span class="text-muted">Tiada lampiran</span>
-                                                @endif
-                                            </div>
-
-                                            <div class="d-flex py-2 border-bottom align-items-center">
                                                 <strong class="me-3" style="min-width: 150px;">Kategori Mesyuarat</strong>
                                                 <span class="text-muted">
-                                                    {{ $application->applicationRoom->kategori_mesyuarat == '1'
-                                                        ? 'Mesyuarat Pengurusan Tertinggi'
+                                                    {{ $application->applicationRoom->kategori_mesyuarat == '1' 
+                                                        ? 'Mesyuarat Pengurusan Tertinggi' 
                                                         : 'Mesyuarat Lain-lain' }}
                                                 </span>
-                                            </div>
-
+                                            </div>              
+                                        
                                             @php
                                                 $penganjur = $application->applicationRoom->penganjur;
                                                 $penganjurLabel = match($penganjur) {
@@ -301,7 +251,7 @@
                                                 <strong class="me-3" style="min-width: 150px;">Penganjur</strong>
                                                 <span class="text-muted">{{ $penganjurLabel }}</span>
                                             </div>
-
+                    
                                             @if(in_array($penganjur, ['BERSAMA', 'LUAR']))
                                                 <div class="d-flex py-2 border-bottom align-items-center">
                                                     <strong class="me-3" style="min-width: 150px;">Nama Penganjur</strong>
@@ -325,9 +275,9 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div>            
 
-                                            <div class="d-flex py-2 border-bottom align-items-center">
+                                            <div class="d-flex py-2 border-bottom align-items-center">                  
                                                 <strong class="me-3" style="min-width: 150px;">Sajian</strong>
                                                 <div class="flex-grow-1 text-muted">
                                                     {{ $application->applicationRoom->sajian ?: '-' }}
@@ -366,8 +316,8 @@
                                                     </div>
                                                 </div>
                                             @endif
-
-                                            <div class="d-flex py-2 border-bottom align-items-start">
+                        
+                                            <div class="d-flex py-2 border-bottom align-items-start">                    
                                                 <strong class="me-3" style="min-width: 150px;">Catatan</strong>
                                                 <div class="flex-grow-1 text-muted white-space-prewrap">
                                                     {{ $application->applicationRoom->catatan ?: '-' }}
@@ -379,7 +329,7 @@
                                                 @if($application->applicationVc->status_vc_id == '4' && is_null($application->applicationVc->komen_ditolak))
                                                     <div class="form-group row">
                                                         <label for="catatan_vc_penyelia"
-                                                            class="col-md-3 col-form-label">{{ __('Catatan Ditolak/Batal') }}</label>
+                                                            class="col-md-3 col-form-label text-md-right">{{ __('Catatan Ditolak/Batal') }}</label>
                                                         <div class="col-md-9">
                                                             <textarea rows="2" cols="2" class="form-control" name="catatan_vc_penyelia" readonly>{{ $application->applicationRoom->komen_ditolak }}</textarea>
                                                         </div>
@@ -388,13 +338,13 @@
                                             @endif
 
                                         <!-- </div> -->
-
+                                        
                                     </div>
                                 </div>
                             </div>
-
+                    
                         </div>
-
+                    
                     </div>
 
                     <div class="tab-pane fade" id="maklumat_bilik">
@@ -410,49 +360,61 @@
                     @if ($applicationCount > 0)
                         <div class="alert alert-warning alert-dismissible">
                             <!-- <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button> -->
-                            <span class="font-weight-semibold">Perhatian : </span> Bilik ini <b>telah
-                                ditempah</b> pada tarikh dan masa yang sama. Mohon semakan Pentadbir bilik supaya tiada pertindihan kelulusan.
+                            <span class="font-weight-semibold">Perhatian : </span> Bilik ini <b>TELAH
+                            DITEMPAH</b> pada tarikh dan masa yang sama.  Mohon semakan <b>PENTADBIR BILIK</b> supaya tiada pertindihan kelulusan.
                         </div>
                     @endif
                 @endif
-
+                
                 <div class="card-footer text-center">
                     <button class="btn btn-sm bg-secondary" onclick="history.back()" type="button">
                         Kembali</button>
                     @if ($application->applicationRoom->status_room_id == '1')
-
-                       {{-- <form action="/admin/application_room/result/{{ $application->id }}" method="POST" class="approval-form">
-                            {{ csrf_field() }} --}}
+                        <form class="delete" method="POST">
+                            {{ csrf_field() }}
                             <input type="hidden" name="_method" value="POST">
                             <input type="hidden" name="button" value="2">
-                            <button type="button" id="btnSubmit" class="btn btn-primary btn-sm confirm-submit"
-
+                            <button type="submit" class="btn btn-primary btn-sm submit-btn"
                                 @disabled($applicationCount > 0)>
-                                Lulus
+                                Lulus dengan Pindaan
                             </button>
-                        {{-- </form> --}}
+                        </form>
 
-                        <button type="button" name="button" value="4" data-toggle="modal"
+                        <!-- <button type="button" name="button" value="4" data-toggle="modal"
                             data-target="#modal_tolak" class="btn btn-danger btn-sm"
                             onclick="copy_catatan_room_penyelia_tolak()">Tolak</button>
                         <button type="button" name="button" value="13" data-toggle="modal"
                             data-target="#modal_batal" class="btn btn-danger btn-sm"
-                            onclick="copy_catatan_room_penyelia_batal()">Batal</button>
+                            onclick="copy_catatan_room_penyelia_batal()">Batal</button> -->
                     @elseif($application->applicationRoom->status_room_id == '2' ||
                         $application->applicationRoom->status_room_id == '14')
                         <button type="button" name="button" value="12" data-toggle="modal"
-                            data-target="#modal_batal" class="btn btn-warning btn-sm">Batal</button>
+                            data-target="#modal_batal" class="btn btn-warning btn-sm">Batal L</button>
                     @elseif($application->applicationRoom->status_room_id == '3')
-
-                            {{-- Butang Lulus Pembatalan --}}
-                            <button type="button" name="button" value="5" class="btn btn-primary btn-sm">
-                                Lulus Pembatalan
-                            </button>
-                            {{-- Butang Tolak Pembatalan --}}
-                            <button type="button" name="button" value="6" class="btn btn-danger btn-sm">
+                        <!-- <a href="/admin/application_room/result/{{ $application->id }}"><button type="submit"
+                                name="button5" value="5" class="btn btn-primary btn-sm">Lulus
+                                Pembatalan</button></a>
+                        <form class="delete" method="POST">
+                            {{ csrf_field() }}
+                            <input type="hidden" name="_method" value="POST">
+                            <input type="hidden" name="button" value="6">
+                            <button type="submit" class="btn btn-danger btn-sm submit-btn">
                                 Tolak Pembatalan
                             </button>
-                        {{-- </form> --}}
+                        </form> -->
+                        <form action="/admin/application_room/result/{{ $application->id }}" method="POST">
+                            @csrf
+                            {{-- Butang Lulus Pembatalan --}}
+                            <button type="submit" name="button" value="5" class="btn btn-primary btn-sm">
+                                Lulus Pembatalan
+                            </button>
+
+                            {{-- Butang Tolak Pembatalan --}}
+                            <button type="submit" name="button" value="6" class="btn btn-danger btn-sm">
+                                Tolak Pembatalan
+                            </button>
+                        </form>
+
 
                     @endif
 
@@ -517,14 +479,14 @@
 
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-link" data-dismiss="modal">Tutup</button>
-
-                                @if($application->applicationRoom->status_room_id == '1')
-                                <button type="submit" name="button" value="13"
+                                
+                                @if($application->applicationRoom->status_room_id == '1')                           
+                                <button type="submit" name="button" value="13" 
                                     class="btn bg-success">Hantar</button>
                                 @endif
 
-                                @if($application->applicationRoom->status_room_id == '2')
-                                <button type="submit" name="button" value="12"
+                                @if($application->applicationRoom->status_room_id == '2')                           
+                                <button type="submit" name="button" value="12" 
                                     class="btn bg-success">Hantar</button>
                                 @endif
                                 <!-- <a href="/admin/application_room/result/{{ $application->id }}"><button type="submit" name="button" value="4" class="btn btn-danger btn-sm">Tolak</button></a> -->
@@ -604,47 +566,24 @@
 @endsection
 
 @section('script')
-<script>
-
-    document.addEventListener('DOMContentLoaded', function () {
-    const btnSubmit = document.getElementById('btnSubmit');
-    const form = document.getElementById('myForm');
-
-    if (!btnSubmit) return;
-
-        btnSubmit.addEventListener('click', function (e) {
-        e.preventDefault(); // elak form auto submit
-
-        Swal.fire({
-            title: 'Hantar kelulusan?',
-            text: 'Pastikan semua maklumat permohonan betul sebelum diluluskan.',
-            // icon: 'info',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, hantar!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-        if (result.isConfirmed) {
-            // setkan input hidden "button" = 2 sebelum submit
-            let hiddenButton = form.querySelector('input[name="button"]');
-            if (hiddenButton) {
-            hiddenButton.value = 2;
-            } else {
-            // kalau tiada, cipta baru
-            hiddenButton = document.createElement('input');
-            hiddenButton.type = 'hidden';
-            hiddenButton.name = 'button';
-            hiddenButton.value = 2;
-            form.appendChild(hiddenButton);
-            }
-
-            form.submit(); // hantar form
-        }
-        });
-    });
-    });
-</script>
-
     <script>
+        $('.submit-btn').click(function(event) {
+            var form = $(this).closest("form");
+            event.preventDefault();
+            Swal.fire({
+                title: 'Adakah anda pasti?',
+                showCancelButton: true,
+                confirmButtonColor: '#22bb33',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya',
+                cancelButtonText: 'Tidak',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+
+            })
+        });
 
         function webexSelected() {
             var webex_ya = document.getElementById("ya");
@@ -759,5 +698,3 @@
         }
     </script>
 @endsection
-
-

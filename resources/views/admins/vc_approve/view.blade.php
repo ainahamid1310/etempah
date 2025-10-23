@@ -50,6 +50,10 @@
                 <form class="confirm" action="/admin/application_vc/result/{{ encrypt($application->batch_id) }}" method="POST">
                     {{ csrf_field() }}
                     <div class="tab-content">
+                        <div class="card-header bg-white d-flex justify-content-between">
+                            <strong>Maklumat <a href="#" data-toggle="modal" data-target="#modal_default"> Pemohon </a><i
+                                    class="icon-info22 mr-3"></i></strong>
+                        </div>
                         <div class="tab-pane fade" id="maklumat_permohonan">
 
                             <fieldset>
@@ -61,7 +65,7 @@
                                             <div class="d-flex py-2 border-bottom align-items-center">
                                                 <strong class="me-3" style="min-width: 180px;">Nama Bilik/Lokasi</strong>
                                                 <span>{{ $application?->room->nama ? :'-' }}</span>
-                                            </div>  
+                                            </div>
                                             <br>
 
                                             <br>
@@ -71,12 +75,12 @@
                                                             <th style="width: 5%;">Batch ID</th>
                                                             <th style="width: 5%;">ID</th>
                                                             <th class="text-center" style="width: 20%;">Tarikh/Masa Mula</th>
-                                                            <th class="text-center" style="width: 20%;">Tarikh/Masa Tamat</th>         
+                                                            <th class="text-center" style="width: 20%;">Tarikh/Masa Tamat</th>
                                                             <th class="text-center" style="width: 20%;">Status</th>
                                                         </tr>
                                                     </thead>
-                                                    
-                                                    <tbody id="booking-rows"> 
+
+                                                    <tbody id="booking-rows">
                                                         @foreach ($applications as $app)
                                                             <tr class="booking-row align-middle">
 
@@ -97,9 +101,9 @@
                                                                 </td>
 
                                                                 <td class="text-center">
-                                                                    
+
                                                                     @if (!empty($contains))
-                                                                        @if ($app->applicationVc->status_vc_id == '1')                                                            
+                                                                        @if ($app->applicationVc->status_vc_id == '1')
                                                                             <span
                                                                                 class="badge badge-warning">{{ $app->applicationVc->statusVc->status_pentadbiran }}</span>
                                                                         @elseif($app->applicationVc->status_vc_id == '2' ||
@@ -122,7 +126,7 @@
                                                                         @else
                                                                             <span
                                                                                 class="badge badge-secondary">{{ $app->applicationRoom->statusRoom->status_pentadbiran ?? 'Tiada Permohonan' }}
-                                                                            </span> 
+                                                                            </span>
                                                                         @endif
                                                                     @else
                                                                         @if ($app->applicationVc->status_vc_id == '1')
@@ -143,14 +147,14 @@
                                                                     @endif
 
                                                                 </td>
-                                                         
+
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
                                                 </table>
                                                 <hr>
 
-                    
+
 
                                             <div class="form-group row">
                                                 <label for="nama_mesyuarat"

@@ -39,7 +39,7 @@
                 feedback.style.display = 'none';
             }
         }
-        
+
         // Semua input, select, textarea biasa
         document.querySelectorAll('input, select, textarea').forEach(function (el) {
             el.addEventListener('input', removeError);
@@ -54,8 +54,8 @@
                 select.next('.select2-container').find('.select2-selection').removeClass('is-invalid');
                 select.closest('.form-group').find('.invalid-feedback').hide();
             });
-        }    
-        
+        }
+
         // SEMAKAN SUSUNAN TARIKH BILA TARIKH DITUKAR
         document.querySelectorAll('input[name^="bookings"]').forEach(function (el) {
                 el.addEventListener('change', function (e) {
@@ -64,7 +64,7 @@
             });
         });
 
-    
+
         // function removeDateError(e) {
         //     const input = e.target;
 
@@ -80,9 +80,9 @@
         //         errorIcon.remove();
         //     }
         // }
-        
+
     });
-        
+
 </script>
 
 @endsection
@@ -101,7 +101,7 @@
         align-items: center;
         justify-content: center;
 
-        
+
     }
         a.disabled {
         pointer-events: none;
@@ -123,7 +123,7 @@
         pointer-events: none;
         opacity: 0.6;
         cursor: not-allowed;
-    }   
+    }
 
         .nav-link.disabled {
         pointer-events: none;   /* elak boleh klik */
@@ -135,17 +135,17 @@
 
     <body>
         <div class="card">
-         
+
             <div class="card-body">
-              
+
                 @if(session('email_error'))
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
                         {{ session('email_error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
-           
-                    <div class="tab-content">        
+
+                    <div class="tab-content">
 
                         <div class="card">
 
@@ -153,7 +153,7 @@
                                 <h5 class="mb-0">Permohonan Tempahan</h5>
                             </div>
 
-                            <div class="card-body">                            
+                            <div class="card-body">
 
                                 <ul class="nav nav-pills nav-justified mb-3" role="tablist">
                                     <li class="nav-item">
@@ -178,7 +178,7 @@
                     action="/admin/application_room/edit/{{ $application->applicationRoom->id }}">
                                     @csrf
                                     <div class="tab-content">
-                                        <!-- Tab 1 -->                                        
+                                        <!-- Tab 1 -->
                                         <div class="tab-pane fade show active" id="maklumat_permohonan" role="tabpanel">
                                             <div class="form-group row">
                                                 <label class="col-md-3 col-form-label text-md-right">Nama Bilik/Lokasi</label>
@@ -198,7 +198,7 @@
                                                         <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
                                                     @enderror
                                                 </div>
-                                                
+
                                             </div>
                                             <div class="alert alert-danger border-0 alert-dismissible"
                                                 id="div_alert_bilik_manual" style="display: none">
@@ -220,7 +220,7 @@
                                             <div class="alert alert-warning border-0 alert-dismissible" id="div_alert_wifimiti"         style="display: none">
                                                 <button type="button" class="close" data-dismiss="alert"></button>
                                                 <strong>Makluman : </strong> Sekiranya memerlukan Voucher <b>MITIWIFI_Guest</b>, sila emelkan permohonan kepada urki@miti.gov.my
-                                            </div>                                       
+                                            </div>
 
                                             <input type="hidden" id="is_auto" name="is_auto" value="{{ old('is_auto') }}">
                                                     <input type="hidden" id="is_upload" name="is_upload"
@@ -269,7 +269,7 @@
                                                 class="d-inline-flex align-items-center gap-2">
                                                     <i class="fas fa-plus-circle fa-lg"></i>Tambah Tarikh
                                                 </a>
-                                            </div>           
+                                            </div>
 
                                             <div class="form-group row">
                                                 <label for="nama_mesyuarat"
@@ -281,7 +281,7 @@
                                                             <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
                                                         @enderror
                                                 </div>
-                                            </div>                                            
+                                            </div>
 
                                             <div class="form-group row">
                                                 <label for="kategori_pengerusi"
@@ -355,7 +355,7 @@
                                                     class="col-md-3 col-form-label text-md-right">{{ __('Bil.Tempahan/Kehadiran') }}</label>
                                                 <div class="col-md-2">
                                                     <input id="bil_tempah" type="text" class="form-control @error('nama_mesyuarat') is-invalid @enderror"
-                                                        name="bilangan_tempahan" value="{{ old('bilangan_tempahan', $application->bilangan_tempahan) }}"                                                  
+                                                        name="bilangan_tempahan" value="{{ old('bilangan_tempahan', $application->bilangan_tempahan) }}"
                                                         autocomplete="bilangan_tempahan"
                                                         placeholder="Bil. Orang">
                                                         @error('bilangan_tempahan')
@@ -363,7 +363,7 @@
                                                         @enderror
 
                                                 </div>
-                                            </div>                                      
+                                            </div>
 
                                             <div class="text-center">
                                                 <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya</a>
@@ -409,13 +409,13 @@
                                                         id="preBtn2" role="button">Kembali</a>
 
                                                     <!-- <a href="#maklumat_bilik" class="btn btn-secondary" id="prevBtn" data-toggle="tab">Kembali</a> -->
-                                                    
+
                                                     <button type="submit" class="btn btn-primary btn-sm submit-btn">
                                                     Lulus Dengan Pindaan
                                                 </button>
                                                 </div>
                                             </div>
-                                          
+
                                         </div>
                                     </div>
 
@@ -423,11 +423,11 @@
                             </div>
                         </div>
 
-                    </div>         
-                
+                    </div>
+
             </div>
 
-        </div>                                                    
+        </div>
 
     </body>
 
@@ -451,8 +451,8 @@
 
 @section('script')
 
-<script>  
-    let suppressAvailabilityCheck = false; 
+<script>
+    let suppressAvailabilityCheck = false;
 
     function getRoomId() {
         return document.getElementById('room')?.value || null;
@@ -480,7 +480,7 @@
     }
 
 
-    
+
     function markInvalidSequenceRows() {
         console.log("Validasi susunan tarikh sedang dijalankan...(markInvalidSequenceRows)");
         const rows = document.querySelectorAll('.booking-row');
@@ -529,14 +529,14 @@
                 statusSpan.innerHTML = `
                     <i class="fas fa-exclamation-triangle text-danger fa-lg show-sequence-error"
                     style="cursor:pointer;" title="${message}"></i>`;
-                statusSpan.setAttribute('data-status', 'sequence-error');          
+                statusSpan.setAttribute('data-status', 'sequence-error');
 
-                // Kosongkan input start dan end            
+                // Kosongkan input start dan end
                 const startInput = row.querySelector('input[name^="bookings"][name$="[start]"]');
-                const endInput = row.querySelector('input[name^="bookings"][name$="[end]"]'); 
-                
+                const endInput = row.querySelector('input[name^="bookings"][name$="[end]"]');
+
                 suppressAvailabilityCheck = true;
-            
+
                 setTimeout(() => {
                     [startInput, endInput].forEach(input => {
                         if (!input) return;
@@ -560,7 +560,7 @@
                     suppressAvailabilityCheck = false;
                 }, 300);
 
-                startInput?.focus();        
+                startInput?.focus();
 
                 Swal.fire({
                     title: 'Susunan Tarikh Tidak Sah',
@@ -588,7 +588,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      
+
         // init semua yang sedia ada masa load
         document.querySelectorAll('.start-input, .end-input').forEach(input => {
             flatpickr(input, {
@@ -622,7 +622,7 @@
                 tabLink.classList.add('active');
                 tabPane.classList.add('show', 'active');
             }
-        }    
+        }
 
         // Format tarikh
         function formatTarikhDMY(tarikh) {
@@ -688,7 +688,7 @@
                 });
             });
         }
-      
+
         function bindChangeEventToRow(row) {
             row.querySelectorAll('.start-input, .end-input').forEach(input => {
                 input.addEventListener('change', function (e) {
@@ -712,7 +712,7 @@
                     markInvalidSequenceRows();
                 });
             });
-        } 
+        }
 
         function checkAvailabilityIfReady(row) {
             console.log('checkAvailabilityIfReady dipanggil');
@@ -768,7 +768,7 @@
             }
 
             return { valid: true };
-        }    
+        }
 
         const CHECK_AVAILABILITY_URL = "{{ route('check.availability') }}";
         const CSRF_TOKEN = "{{ csrf_token() }}";
@@ -777,26 +777,26 @@
         let debounceTimeout;
 
         // Debounce helper tanpa lodash
-function debounce(fn, delay) {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-}
+    function debounce(fn, delay) {
+        let timer;
+        return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
 
 const debounceMap = new WeakMap();
 
-function debounceCheckAvailability(roomId, start, end, row) {
-    if (!debounceMap.has(row)) {
-        debounceMap.set(row, debounce((roomId, start, end, row) => {
-            checkAvailability(roomId, start, end, row);
-        }, 500));
+    function debounceCheckAvailability(roomId, start, end, row) {
+        if (!debounceMap.has(row)) {
+            debounceMap.set(row, debounce((roomId, start, end, row) => {
+                checkAvailability(roomId, start, end, row);
+            }, 500));
+        }
+        debounceMap.get(row)(roomId, start, end, row);
     }
-    debounceMap.get(row)(roomId, start, end, row);
-}
 
-    
+
         function checkAvailability(roomId, start, end, row) {
             console.log('semak checkAvailability', row);
 
@@ -849,7 +849,7 @@ function debounceCheckAvailability(roomId, start, end, row) {
 
         initFlatpickrForRow(firstRow);
         bindChangeEventToRow(firstRow);
-    
+
         document.getElementById('addRow').addEventListener('click', function () {
             const newRow = firstRow.cloneNode(true);
 
@@ -886,7 +886,7 @@ function debounceCheckAvailability(roomId, start, end, row) {
         });
 
         // ===================== SELECT2 & ROOM CHANGE ===================== //
-        
+
        $('#room').on('select2:select change', function () {
     console.log('🏠 Room change → semak semua rows');
 
@@ -954,7 +954,7 @@ function debounceCheckAvailability(roomId, start, end, row) {
             document.getElementById('submitButton').disabled = true;
         });
 
-       
+
         // Loop semua row yang dah wujud masa edit
         document.querySelectorAll('.booking-row').forEach(row => {
             initFlatpickrForRow(row);
@@ -963,7 +963,7 @@ function debounceCheckAvailability(roomId, start, end, row) {
             // terus check availability kalau dah ada value
             checkAvailabilityIfReady(row);
         });
-        
+
         // ✅ Trigger room change untuk populate hidden inputs
     $('#room').trigger('change');
 

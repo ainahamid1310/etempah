@@ -40,6 +40,10 @@
             <form method="post" enctype="multipart/form-data">
 
                 <div class="tab-content">
+                    <div class="card-header bg-white d-flex justify-content-between">
+                        <strong>Maklumat <a href="#" data-toggle="modal" data-target="#modal_default"> Pemohon </a><i
+                                class="icon-info22 mr-3"></i></strong>
+                    </div>
                     <div class="tab-pane fade show active" id="maklumat_permohonan">
                         <fieldset>
                             <div class="card card bg-light">

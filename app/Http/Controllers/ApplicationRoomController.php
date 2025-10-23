@@ -58,20 +58,6 @@ class ApplicationRoomController extends Controller
             $tajuk = 'Rekod Tempahan Bilik';
         }
 
-        // ori
-        // $batches = Application::select('batch_id',DB::raw('MIN(tarikh_mula) as tarikh_mula'))
-        //     ->whereBetween('tarikh_mula', [
-        //         Carbon::now()->startOfYear(),
-        //         Carbon::now()->endOfYear(),
-        //     ])
-        //     ->whereHas('applicationRoom', function ($q) use ($statuses) {
-        //         $q->whereIn('status_room_id', $statuses);
-        //     })
-        //     ->whereIn('room_id', $rooms)
-        //     ->groupBy('batch_id')
-        //     ->orderByDesc('tarikh_mula')
-        //     ->get();
-
         $batches = Application::with(['applicationRoom.statusRoom', 'room'])
             ->whereBetween('tarikh_mula', [
                 Carbon::now()->startOfYear(),
@@ -129,8 +115,8 @@ class ApplicationRoomController extends Controller
         //end new data
 
         $application_exist = Application::join('application_rooms', 'applications.id', '=', 'application_rooms.application_id')
-            ->where('tarikh_hingga', '>=', $application->tarikh_mula)
-            ->where('tarikh_mula', '<=', $application->tarikh_hingga)
+            ->where('tarikh_hingga', '>', $application->tarikh_mula)
+            ->where('tarikh_mula', '<', $application->tarikh_hingga)
             ->where('room_id', $application->room_id)
             ->whereIn('status_room_id', ['2', '6', '11', '14'])->first();
 
@@ -172,8 +158,25 @@ class ApplicationRoomController extends Controller
         $applicationRoomId = decrypt($applicationRoomId);
         $departments = Department::orderBy('nama', 'ASC')->get();
         $positions = Position::orderBy('nama', 'ASC')->get();
-        $application = Application::where('batch_id', $applicationRoomId)->first();
+        // $application = Application::where('batch_id', $applicationRoomId)->first();
         $applications = Application::where('batch_id', $applicationRoomId)->get();
+        $application = $applications->first();
+        $room = $application->applicationRoom;
+        $bookings = [];
+
+        foreach ($applications as $application) {
+            if ($application->tarikh_mula && $application->tarikh_hingga) {
+                $bookings[] = [
+                    'id'    => $application->id,
+                    'batch_id'    => $application->batch_id,
+                    'status_room_id'    => $application->status_room_id,
+                    'status_room_name'    => $application->applicationRoom->statusRoom->status_pentadbiran,
+                    'start' => \Carbon\Carbon::parse($application->tarikh_mula)->format('d/m/Y H:i'),
+                    'end'   => \Carbon\Carbon::parse($application->tarikh_hingga)->format('d/m/Y H:i'),
+                ];
+            }
+        }
+
         $department = $application->user->profile->department_id;
         $user =  User::find(Auth::id());
 
@@ -183,12 +186,12 @@ class ApplicationRoomController extends Controller
         })->get();
 
         $applicationCount = Application::join('application_rooms', 'applications.id', '=', 'application_rooms.application_id')
-            ->where('tarikh_hingga', '>=', $application->tarikh_mula)
-            ->where('tarikh_mula', '<=', $application->tarikh_hingga)
+            ->where('tarikh_hingga', '>', $application->tarikh_mula)
+            ->where('tarikh_mula', '<', $application->tarikh_hingga)
             ->where('room_id', $application->room_id)
             ->whereIn('status_room_id', ['2', '6', '11', '14'])->count();
 
-        return view('admins.room_approve.edit_approve', compact('applications','application', 'departments', 'rooms', 'positions', 'applicationCount','user','contains'));
+        return view('admins.room_approve.edit_approve', compact('applications','application', 'bookings', 'departments', 'rooms', 'positions', 'applicationCount','user','contains'));
     }
 
     public function update(Request $request, $batch_id)
@@ -532,7 +535,7 @@ class ApplicationRoomController extends Controller
         }
         // return $applicationFirst->applicationRoom->status_room_id;
 
-    // Assign ApplicationRoom data for email content
+        // Assign ApplicationRoom data for email content
         $komen_ditolak = null;
         if ($applicationFirst->applicationRoom->status_room_id == '2') { //Lulus
             $msg = 'Permohonan telah diluluskan.';
@@ -540,7 +543,6 @@ class ApplicationRoomController extends Controller
         }
 
         if ($applicationFirst->applicationRoom->status_room_id == '3') { //Permohonan Pembatalan
-
         }
 
         if ($applicationFirst->applicationRoom->status_room_id == '4') { //Tolak
@@ -580,7 +582,7 @@ class ApplicationRoomController extends Controller
 
         $nama_pengerusi = $application->nama_pengerusi ?? $application->kategori_pengerusi;
 
-    //close for email content ApplicationRoom
+        //close for email content ApplicationRoom
         if($applicationFirst->applicationRoom->status_room_id == '5' || $applicationFirst->applicationRoom->status_room_id == '6'){
             $action_penyelia2 = 'pembatalan';
         }else{
@@ -637,7 +639,7 @@ class ApplicationRoomController extends Controller
                 $vc_komen_ditolak = '';
             }
 
-        // Email VC
+            // Email VC
             if (in_array($request->button, ['2', '4', '13', '12']) || in_array($request->button5, ['5']) || in_array($request->button6, ['6'])) {
                 $vc->action_by = $supervisorRoom->id;
 
@@ -721,9 +723,9 @@ class ApplicationRoomController extends Controller
                 }else{
                     $vc_komen_ditolak = '';
                 }
-        }else{
-
-        $vc_komen_ditolak = null;
+            }
+        else{
+            $vc_komen_ditolak = null;
         }
 
         //Collect date
@@ -742,49 +744,49 @@ class ApplicationRoomController extends Controller
             }
 
             $senarai_tarikh = $tarikh_list;
-        //End Collect date
+            //End Collect date
 
-        $data = array(
-            'to_pemohon' => $application->user->email,
-            'tempahan' => $tempahan,
-            'to_penyelia_vc' => $email_penyeliaVc,
-            'subject_pemohon' => 'Makluman: Permohonan ' . ucwords(strtolower($action_penyelia2)) . ' Tempahan ' . $tempahan . ' di ' . $application->room->nama . ' '.$action_pemohon,
-            'subject_pemohon' => 'Makluman: Permohonan ' . ucwords(strtolower($action_penyelia2)) . ' Tempahan ' . $tempahan . ' di ' . $application->room->nama,
-            'subject_penyelia_vc' => 'Makluman : Permohonan Baru Tempahan VC di ' . $application->room->nama . $action_penyelia_vc,
-            'tarikh_list' => $tarikh_list,
-            'subject_penyelia_vc' => 'Makluman : Permohonan Baru Tempahan VC di ' . $application->room->nama, ''. $action_penyelia_vc,
-            'action_pemohon' => $action_pemohon,
-            'action_penyelia2' => $action_penyelia2,
-            'action_penyelia_vc' => $action_penyelia_vc,
-            'id' => $application->id,
-            'batch_id' => $application->batch_id,
-            'nama_pemohon' => $application->user->name,
-            'bahagian_pemohon' => $application->user->profile->department->nama,
-            'nama_mesyuarat' => $application->nama_mesyuarat,
-            'bilik' => $application->room->nama,
-            'status_bilik' => $application->applicationRoom->statusRoom->status_pemohon,
-            'status_bilik_id' => $application->applicationRoom->status_room_id,
-            'komen_ditolak' => $komen_ditolak,
-            'senarai_tarikh' => $senarai_tarikh,
-            'nama_pengerusi' => $nama_pengerusi,
-            'bilangan_tempahan' => $application->bilangan_tempahan,
-            'catatan_room' => $application->applicationRoom->catatan,
-            'catatan_room_penyelia' => $application->applicationRoom->catatan_penyelia,
-            'apply_vc' => $apply_vc,
-            'status_vc_id' => $status_vc_id,
-            'status_vc' => $status_vc,
-            'link_webex' => $link_webex,
-            'id_webex' => $id_webex,
-            'password_webex' => $password_webex,
-            'password_expired' => $password_expired,
-            'catatan_penyelia_vc' => $catatan_penyelia_vc,
-            'webex' => $webex,
-            'peralatan' => $peralatan,
-            'nama_aplikasi' => $nama_aplikasi,
-            'catatan_vc' => $catatan_vc,
-            'note' => $note,
-            'vc_komen_ditolak' => $vc_komen_ditolak,
-        );
+            $data = array(
+                'to_pemohon' => $application->user->email,
+                'tempahan' => $tempahan,
+                'to_penyelia_vc' => $email_penyeliaVc,
+                'subject_pemohon' => 'Makluman: Permohonan ' . ucwords(strtolower($action_penyelia2)) . ' Tempahan ' . $tempahan . ' di ' . $application->room->nama . ' '.$action_pemohon,
+                'subject_pemohon' => 'Makluman: Permohonan ' . ucwords(strtolower($action_penyelia2)) . ' Tempahan ' . $tempahan . ' di ' . $application->room->nama,
+                'subject_penyelia_vc' => 'Makluman : Permohonan Baru Tempahan VC di ' . $application->room->nama . $action_penyelia_vc,
+                'tarikh_list' => $tarikh_list,
+                'subject_penyelia_vc' => 'Makluman : Permohonan Baru Tempahan VC di ' . $application->room->nama, ''. $action_penyelia_vc,
+                'action_pemohon' => $action_pemohon,
+                'action_penyelia2' => $action_penyelia2,
+                'action_penyelia_vc' => $action_penyelia_vc,
+                'id' => $application->id,
+                'batch_id' => $application->batch_id,
+                'nama_pemohon' => $application->user->name,
+                'bahagian_pemohon' => $application->user->profile->department->nama,
+                'nama_mesyuarat' => $application->nama_mesyuarat,
+                'bilik' => $application->room->nama,
+                'status_bilik' => $application->applicationRoom->statusRoom->status_pemohon,
+                'status_bilik_id' => $application->applicationRoom->status_room_id,
+                'komen_ditolak' => $komen_ditolak,
+                'senarai_tarikh' => $senarai_tarikh,
+                'nama_pengerusi' => $nama_pengerusi,
+                'bilangan_tempahan' => $application->bilangan_tempahan,
+                'catatan_room' => $application->applicationRoom->catatan,
+                'catatan_room_penyelia' => $application->applicationRoom->catatan_penyelia,
+                'apply_vc' => $apply_vc,
+                'status_vc_id' => $status_vc_id,
+                'status_vc' => $status_vc,
+                'link_webex' => $link_webex,
+                'id_webex' => $id_webex,
+                'password_webex' => $password_webex,
+                'password_expired' => $password_expired,
+                'catatan_penyelia_vc' => $catatan_penyelia_vc,
+                'webex' => $webex,
+                'peralatan' => $peralatan,
+                'nama_aplikasi' => $nama_aplikasi,
+                'catatan_vc' => $catatan_vc,
+                'note' => $note,
+                'vc_komen_ditolak' => $vc_komen_ditolak,
+            );
 
         if (!empty($application->applicationVc)) {
             if ($request->button == '2' || $application->applicationRoom->status_room_id == '13') {
@@ -797,7 +799,7 @@ class ApplicationRoomController extends Controller
             }
         }
 
-	if(!empty($application->applicationVc)) {
+        if(!empty($application->applicationVc)) {
             if ($request->button == '12' || $application->applicationRoom->status_room_id == '12') {
                     Mail::send(['html' => 'emails.penyelia_vc_batal'], $data, function ($message) use ($data) {
                     $message->subject($data['subject_pemohon']);
@@ -814,7 +816,26 @@ class ApplicationRoomController extends Controller
         });
 
         return redirect('/admin/application_room/show/' . encrypt($application->id))->with('successMessage', $msg);
-        // return $application;
+            // return $application;
+    }
+
+    public function resultEdit($applicationId)
+    {
+        $rooms = ApplicationRoom::where('application_id', $applicationId)->get();
+
+        if ($rooms->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Tiada bilik ditemui.']);
+        }
+
+        foreach ($rooms as $room) {
+            $room->update([
+                'status_room_id' => 13,
+                'cancelled_by_admin' => true,
+                'cancel_reason' => 'Pindaan semasa kelulusan'
+            ]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     /**

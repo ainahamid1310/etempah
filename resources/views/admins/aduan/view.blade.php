@@ -35,6 +35,12 @@
 
 
             <div class="tab-content">
+
+                <div class="card-header bg-white d-flex justify-content-between">
+                    <strong>Maklumat <a href="#" data-toggle="modal" data-target="#modal_default"> Pemohon </a><i
+                            class="icon-info22 mr-3"></i></strong>
+                </div>
+                
                 <div class="tab-pane fade" id="maklumat_permohonan">
 
                     <!-- Collapsible with left control button -->

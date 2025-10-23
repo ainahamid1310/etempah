@@ -167,6 +167,7 @@ Route::group(
                 Route::post('/admin/application_room/edit_pantry/{application_room}',[ApplicationRoomController::class,'update_pantry']);
                 Route::get('/admin/application_room/show/{application_room}',[ApplicationRoomController::class,'show']);
                 Route::post('/admin/application_room/result/{batch_id}',[ApplicationRoomController::class,'result']);
+                Route::post('/admin/application_room/edit_approve/{id}',[ApplicationRoomController::class,'resultEdit'])->name('application-room.pindaan.cancelByAdmin');
 
                 //Aduan Admin
                 Route::get('/admin/report',[AdminReportController::class,'index']);

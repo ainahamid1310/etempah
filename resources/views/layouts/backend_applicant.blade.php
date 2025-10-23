@@ -72,8 +72,9 @@
     <script src="/global_assets/js/demo_pages/form_multiselect.js"></script>
     <script src="/global_assets/js/demo_pages/form_dual_listboxes.js"></script>
     <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- /theme JS files -->
-    
+
 <style>
     #time-fields {
     display: block;

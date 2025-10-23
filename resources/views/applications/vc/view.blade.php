@@ -1,19 +1,19 @@
 <fieldset>
 
     <div class="card-group-control card-group-control-left">
-        <div class="card bg-light">        
+        <div class="card bg-light">
 
-            <div class="card-header bg-white d-flex justify-content-between">
+            {{-- <div class="card-header bg-white d-flex justify-content-between">
                 <strong>Maklumat <a href="#" data-toggle="modal" data-target="#modal_default"> Pemohon </a><i
                         class="icon-info22 mr-3"></i></strong>
-            </div>
+            </div> --}}
               <div class="card-body ps-3">
                  <div class="mb-3">
                     <strong class="fw-bold text-dark">Maklumat VC</strong>
 
                     <div class="ps-3">
-                        
-                        <div style="padding-left: 4rem;">     
+
+                        <div style="padding-left: 4rem;">
 
                             @php
                                 $webex = $application->applicationVc->webex;
@@ -60,7 +60,7 @@
                                             class="col-md-3 col-form-label text-md-right">{{ __('Log Masuk WEBEX') }}
                                             <span class="text-danger">*</span></label>
                                         <div class="col-md-9">
-                                         
+
                                             @if (!empty($application->applicationVc->link_webex))
                                                 <input type="text" class="form-control" id="link_webex" name="link_webex"
                                                     value="{{ $application->applicationVc->link_webex }}" readonly>
@@ -75,7 +75,7 @@
                                     <div class="form-group row">
                                         <label for="id_webex" class="col-md-3 col-form-label text-md-right">{{ __('ID WEBEX') }}
                                             <span class="text-danger">*</span></label>
-                                        <div class="col-md-9">                                        
+                                        <div class="col-md-9">
                                             @if (!empty($application->applicationVc->id_webex))
                                                 <input type="text" class="form-control" id="id_webex" name="id_webex"
                                                     value="{{ $application->applicationVc->id_webex }}" readonly>
@@ -130,7 +130,7 @@
                                 </div>
                             @endif
 
-                        
+
                             @if($application->applicationVc->status_vc_id == '4' && is_null($application->applicationVc->komen_ditolak))
                                 <div class="form-group row">
                                     <label for="catatan_room_penyelia"
@@ -149,11 +149,11 @@
                                 </div>
                             @endif
 
-                        </div>   
+                        </div>
 
                     </div>
                 </div>
               </div>
-        </div>        
+        </div>
     </div>
 </fieldset>

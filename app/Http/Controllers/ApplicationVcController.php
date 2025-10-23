@@ -52,7 +52,7 @@ class ApplicationVcController extends Controller
 
         // $applications = Application::whereHas('applicationVc', function ($q) use ($statuses) {
         //     $q->whereIn('status_vc_id', $statuses);
-        // })->orderBy('tarikh_mula', 'asc')->get();    
+        // })->orderBy('tarikh_mula', 'asc')->get();
 
         $applications = Application::whereHas('applicationVc', function ($q) use ($statuses) {
                 $q->whereIn('status_vc_id', $statuses);
@@ -122,7 +122,7 @@ class ApplicationVcController extends Controller
         $positions = Position::orderBy('nama', 'ASC')->get();
 
         $rooms = Room::orderBy('nama', 'ASC')->get();
-        
+
         $id = Auth::id();
 
         $user = User::where('id', $id)->first();
@@ -258,10 +258,10 @@ class ApplicationVcController extends Controller
         $batch_id = decrypt($batch_id);
 
         $applications = Application::where('batch_id', $batch_id)->get();
-        
+
         $applicationFirst = Application::where('batch_id', $batch_id)->first();
 
-        $applicationIds = Application::where('batch_id', $batch_id)->pluck('id'); 
+        $applicationIds = Application::where('batch_id', $batch_id)->pluck('id');
 
         // $applicationVc = ApplicationVc::where('application_id', $id)->first();
 
@@ -376,8 +376,8 @@ class ApplicationVcController extends Controller
                     return redirect()->back();
                 }
 
-            
-       
+
+
 
         // if ($applicationFirst->applicationVC->status_vc_id == '2' || $applicationFirst->applicationVC->status_vc_id == '3' || $applicationFirst->applicationVC->status_vc_id == '12') {
 
@@ -482,7 +482,7 @@ class ApplicationVcController extends Controller
             $appVc->status_vc_id = $request->button;
             $appVc->catatan_penyelia = $request->catatan_vc_penyelia;
 
-            if (!$appVc->status_vc_id) continue; 
+            if (!$appVc->status_vc_id) continue;
 
             // $dataVc = [
             //     'status_room_id' => $status_vc_id,
@@ -571,7 +571,7 @@ class ApplicationVcController extends Controller
             }
 
             $senarai_tarikh = $tarikh_list;
-        //End Collect date      
+        //End Collect date
 
         $data = array(
             'to_pemohon' => $application->user->email,
@@ -584,7 +584,7 @@ class ApplicationVcController extends Controller
             'nama_pemohon' => $application->user->name,
             'bahagian_pemohon' => $application->user->profile->department->nama,
             'nama_mesyuarat' => $application->nama_mesyuarat,
-            'bilik' => $application->room->nama,          
+            'bilik' => $application->room->nama,
             'senarai_tarikh' => $senarai_tarikh,
             'nama_pengerusi' => $nama_pengerusi,
             'bilangan_tempahan' => $application->bilangan_tempahan,

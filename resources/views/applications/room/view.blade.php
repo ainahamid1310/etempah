@@ -7,10 +7,10 @@
 
             <div id="collapsible-control-group1" class="collapse show">
 
-                <div class="card-header bg-white d-flex justify-content-between">
-                    <span>Maklumat <a href="#" data-toggle="modal" data-target="#modal_default"> Pemohon </a><i
-                            class="icon-info22 mr-3"></i></span>
-                </div>
+                {{-- <div class="card-header bg-white d-flex justify-content-between">
+                    <strong>Maklumat <a href="#" data-toggle="modal" data-target="#modal_default"> Pemohon </a><i
+                            class="icon-info22 mr-3"></i></strong>
+                </div> --}}
 
                 <div class="card-body">
 

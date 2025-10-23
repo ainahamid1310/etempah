@@ -45,7 +45,7 @@
                 </thead>
                 <tbody>
                     @foreach($applications as $application)
-                      
+
                         <tr>
                             <td>#{{ $application->batch_id }}</td>
                             <td><a
@@ -56,7 +56,7 @@
                             <td>{{ date('d-m-Y', strtotime($application->tarikh_mula)) }} -
                                 {{ date('d-m-Y', strtotime($application->tarikh_hingga)) }} <br>
                                 <small><b>
-                                    ({{ date('h:i A', strtotime($application->tarikh_mula)) }} - 
+                                    ({{ date('h:i A', strtotime($application->tarikh_mula)) }} -
                                     {{ date('h:i A', strtotime($application->tarikh_hingga)) }})
                                 </small></b>
                             </td>
@@ -96,7 +96,7 @@
                                 </td>
                             @endif
                         </tr>
-                    
+
                     @endforeach
 
 
