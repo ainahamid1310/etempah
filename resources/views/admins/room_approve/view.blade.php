@@ -132,7 +132,7 @@
                                                                             <span
                                                                                 class="badge badge-primary">{{ $app->applicationRoom->statusRoom->status_pemohon }}</span>
                                                                         @elseif($app->applicationRoom?->status_room_id == '2' ||
-                                                                            $app->applicationRoom?->statusRoom->status_pentadbiran == '14')
+                                                                            $app->applicationRoom?->status_room_id == '14')
                                                                             <span
                                                                                 class="badge badge-success">{{ $app->applicationRoom?->statusRoom->status_pemohon }}</span>
                                                                         @elseif($app->applicationRoom?->status_room_id == '3' || $app->applicationRoom?->status_room_id == '4')
@@ -146,61 +146,7 @@
                                                                     @endif
 
                                                                 </td>
-                                                                <!-- <td class="text-center">
-                                                                    @if (!empty($contains))
 
-                                                                        @if ($application->applicationVc?->status_vc_id == '1' || $application->applicationVc?->status_vc_id == '2')
-                                                                            <span
-                                                                                class="badge badge-primary">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '3')
-                                                                            <span
-                                                                                class="badge badge-success">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '5' ||
-                                                                            $application->applicationVc?->status_vc_id == '10' ||
-                                                                            $application->applicationVc?->status_vc_id == '11')
-                                                                            <span
-                                                                                class="badge badge-danger">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '4' && is_null($application->applicationVc?->komen_ditolak))
-                                                                        {{-- diasingkan untuk CR Admin VC pada 5 Jun 2024--}}
-                                                                            <span
-                                                                                class="badge badge-danger">Ditolak Oleh Pentadbir Bilik</span>
-
-                                                                        @elseif($application->applicationVc?->status_vc_id == '4' && !is_null($application->applicationVc?->komen_ditolak))
-                                                                        {{-- diasingkan untuk CR Admin VC --}}
-                                                                            <span
-                                                                                class="badge badge-danger">Ditolak Oleh Pentadbir VC</span>
-                                                                        @else
-                                                                            <span
-                                                                                class="badge badge-secondary">{{ $application->applicationVc?->statusVc->status_pentadbiran }}</span>
-                                                                        @endif
-                                                                    @else
-                                                                        @if ($application->applicationVc?->status_vc_id == '1' || $application->applicationVc?->status_vc_id == '2')
-                                                                            <span
-                                                                                class="badge badge-primary">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '3')
-                                                                            <span
-                                                                                class="badge badge-success">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
-                                                                        @elseif($application->applicationVc?->status_vc_id == '5' ||
-                                                                            $application->applicationVc?->status_vc_id == '10' ||
-                                                                            $application->applicationVc?->status_vc_id == '11')
-                                                                            <span
-                                                                                class="badge badge-danger">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
-
-                                                                        @elseif($application->applicationVc?->status_vc_id == '4' && is_null($application->applicationVc?->komen_ditolak))
-                                                                        {{-- diasingkan untuk CR Admin VC pada 5 Jun 2024--}}
-                                                                            <span
-                                                                                class="badge badge-danger">Ditolak Oleh Pentadbir Bilik</span>
-
-                                                                        @elseif($application->applicationVc?->status_vc_id == '4' && !is_null($application->applicationVc?->komen_ditolak))
-                                                                        {{-- diasingkan untuk CR Admin VC --}}
-                                                                            <span
-                                                                                class="badge badge-danger">Ditolak Oleh Pentadbir VC</span>
-                                                                        @else
-                                                                            <span
-                                                                                class="badge badge-secondary">{{ $application->applicationVc?->statusVc->status_pemohon }}</span>
-                                                                        @endif
-                                                                    @endif
-                                                                </td> -->
                                                             </tr>
                                                         @endforeach
                                                     </tbody>

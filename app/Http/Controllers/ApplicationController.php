@@ -133,6 +133,7 @@ class ApplicationController extends Controller
 
                 $application = Application::create([
                     'batch_id' => $batch->id,
+                    'user_id' => Auth::id(),
                     'room_id' => $roomId,
                     'tarikh_mula' => $mula,
                     'tarikh_hingga' => $tamat,

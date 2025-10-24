@@ -266,14 +266,14 @@
                                                         <tr class="booking-row align-middle">
                                                             <td>
                                                                 <div class="input-group">
-                                                                    <span class="input-group-text">
+                                                                    <span class="input-group-text batch_id_input">
                                                                         #{{ $booking['batch_id'] }}
                                                                     </span>
                                                                 </div>
                                                             </td>
                                                             <td>
                                                                 <div class="input-group">
-                                                                    <span class="input-group-text">
+                                                                    <span class="input-group-text id_input">
                                                                          {{ $booking['id'] }}
                                                                     </span>
                                                                 </div>
@@ -319,10 +319,17 @@
                                                             </td>
 
                                                             <td>
+                                                                 <a href="javascript:void(0)"
+                                                                class="text-danger remove-row"
+                                                                title="Padam baris"
+                                                                style="{{ empty($booking['id']) ? '' : 'display:none;' }}">
+                                                                    <i class="fas fa-trash-alt fa-lg"></i>
+                                                                </a>
                                                                 @if ($booking['status_room_id'] == 1)
                                                                     <button type="button"
-                                                                            class="btn btn-warning btn-sm btn-batal-admin"
-                                                                            data-room-id="{{ $booking['id'] }}">
+                                                                        class="btn btn-warning btn-sm btn-batal-admin text-center"
+                                                                        data-room-id="{{ $booking['id'] }}"
+                                                                        style="padding: 1px 6px; font-size: 0.75rem; line-height: 1.2;">
                                                                         Batal
                                                                     </button>
                                                                 @else
@@ -344,7 +351,7 @@
                                                                         };
                                                                     @endphp
 
-                                                                    <span class="{{ $badgeClass }}">{{ $statusName }}</span>
+                                                                    <span class="{{ $badgeClass }} btn-batal-admin">{{ $statusName }}</span>
                                                                 @endif
                                                                 <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
                                                                     <span class="availability-status small"></span>
@@ -353,7 +360,7 @@
                                                                     class="text-danger remove-row"
                                                                     title="Padam baris"
                                                                     style="display: none;">
-                                                                        <i class="fas fa-trash-alt fa-sm"></i>
+                                                                        <i class="fas fa-trash-alt fa-lg"></i>
                                                                     </a>
                                                                 </td>
 
@@ -395,11 +402,42 @@
                                                             </td>
 
                                                             <td>
+                                                                <a href="javascript:void(0)"
+                                                                class="text-danger remove-row"
+                                                                title="Padam baris"
+                                                                style="{{ empty($booking['id']) ? '' : 'display:none;' }}">
+                                                                    <i class="fas fa-trash-alt fa-lg"></i>
+                                                                </a>
+                                                                @if ($booking['status_room_id'] == 1)
+
                                                                 <button type="button"
-                                                                        class="btn btn-warning btn-sm btn-batal-admin"
-                                                                        data-room-id="{{ $booking['id'] }}">
+                                                                    class="btn btn-warning btn-sm btn-batal-admin text-center"
+                                                                    data-room-id="{{ $booking['id'] }}"
+                                                                    style="padding: 1px 6px; font-size: 0.75rem; line-height: 1.2;">
                                                                     Batal
                                                                 </button>
+                                                                @else
+                                                                    @php
+                                                                        // Ambil nama status dan tentukan warna badge
+                                                                        $statusName = $booking['status_room_name'] ?? $booking['status_room_id'] ?? 'Tidak Dikenal Pasti';
+
+                                                                        // Tetapkan warna badge ikut status_room_id
+                                                                        $badgeClass = match($booking['status_room_id']) {
+                                                                            1 => 'badge badge-primary',
+                                                                            2,14 => 'badge badge-success',
+                                                                            3 => 'badge badge-primary',
+                                                                            4,5 => 'badge badge-danger',
+                                                                            6 => 'badge badge-success',
+                                                                            7 => 'badge badge-success',
+                                                                            12,13 => 'badge badge-warning',
+
+                                                                            default => 'badge badge-light',
+                                                                        };
+                                                                    @endphp
+
+                                                                    <span class="{{ $badgeClass }}">{{ $statusName }}</span>
+                                                                @endif
+
                                                                 <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
                                                                     <span class="availability-status small"></span>
 
@@ -407,7 +445,7 @@
                                                                     class="text-danger remove-row"
                                                                     title="Padam baris"
                                                                     style="display: none;">
-                                                                        <i class="fas fa-trash-alt fa-sm"></i>
+                                                                        <i class="fas fa-trash-alt fa-lg"></i>
                                                                     </a>
                                                                 </td>
 
@@ -522,12 +560,12 @@
                                             </div>
 
                                             {{-- <div class="text-end">
-    <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya</a>
-</div> --}}
+                                                <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya</a>
+                                            </div> --}}
 
-<div class="d-flex justify-content-end">
-    <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya >></a>
-</div>
+                                            <div class="d-flex justify-content-end">
+                                                <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya >></a>
+                                            </div>
 
                                             <br>
 
@@ -1392,15 +1430,25 @@
         document.getElementById('addRow').addEventListener('click', function () {
             const newRow = firstRow.cloneNode(true);
 
+            // Buang butang btn-batal-admin daripada row baru
+            newRow.querySelectorAll('.btn-batal-admin').forEach(btn => btn.remove());
+
             // Kosongkan input
             newRow.querySelectorAll('input').forEach(input => {
-                input.value = '';
                 const name = input.getAttribute('name');
+                input.value = '';
                 if (name) input.setAttribute('name', name.replace(/\[\d+]/, `[${index}]`));
                 input.removeAttribute('id');
                 if (input._flatpickr) input._flatpickr.destroy();
                 input.classList.remove('error-border');
             });
+
+            // ✅ Kosongkan isi batch_id & id (tapi kekalkan td)
+            const batchSpan = newRow.querySelector('.batch_id_input');
+            if (batchSpan) batchSpan.textContent = '';
+
+            const idSpan = newRow.querySelector('.id_input');
+            if (idSpan) idSpan.textContent = '';
 
             // Kosongkan status paparan
             const statusSpan = newRow.querySelector('.availability-status');
@@ -1564,7 +1612,6 @@
                 Swal.fire({
                     title: 'Adakah anda pasti?',
                     text: "Tempahan ini akan dibatalkan oleh pentadbir.",
-                    icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#6c757d',

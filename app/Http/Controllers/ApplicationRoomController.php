@@ -169,7 +169,7 @@ class ApplicationRoomController extends Controller
                 $bookings[] = [
                     'id'    => $application->id,
                     'batch_id'    => $application->batch_id,
-                    'status_room_id'    => $application->status_room_id,
+                    'status_room_id'    => $application->applicationRoom->status_room_id,
                     'status_room_name'    => $application->applicationRoom->statusRoom->status_pentadbiran,
                     'start' => \Carbon\Carbon::parse($application->tarikh_mula)->format('d/m/Y H:i'),
                     'end'   => \Carbon\Carbon::parse($application->tarikh_hingga)->format('d/m/Y H:i'),
@@ -420,20 +420,63 @@ class ApplicationRoomController extends Controller
 
     public function result(Request $request, $batch_id)
     {
-        // return $request->button;
-
         $supervisorRoom =  User::find(Auth::id());
 
         $email_penyeliaVc = User::role('approver-vc')->pluck('email')->toArray();
 
         $applications = Application::where('batch_id', $batch_id)->get();
 
-        $applicationFirst = Application::where('batch_id', $batch_id)->first();
+        $applicationFirst = $applications->first();
+        $applicationRoom = $applicationFirst?->applicationRoom;
 
         $applicationIds = Application::where('batch_id', $batch_id)->pluck('id');
 
         $roomId = $applicationFirst->room_id;
+        $now = now();
 
+        // ===== Tambah Rekod Baru Jika Ada Row Baru (tiada ID) =====
+        if ($request->has('bookings')) {
+            // Ambil semua tarikh sedia ada bagi batch
+            $existing = Application::where('batch_id', $batch_id)
+                ->get(['tarikh_mula', 'tarikh_hingga'])
+                ->map(function ($a) {
+                    return [
+                        'start' => $a->tarikh_mula->format('d/m/Y H:i'),
+                        'end' => $a->tarikh_hingga->format('d/m/Y H:i'),
+                    ];
+                })->toArray();
+
+            foreach ($request->bookings as $booking) {
+
+                // Skip kalau baris lama (ada ID)
+                if (!empty($booking['id'])) continue;
+
+                // Skip kalau tarikh tak lengkap
+                if (empty($booking['start']) || empty($booking['end'])) continue;
+
+                // Check sama ada tarikh ni dah wujud dalam senarai asal
+                $isDuplicate = collect($existing)->contains(function ($exist) use ($booking) {
+                    return $exist['start'] === $booking['start'] && $exist['end'] === $booking['end'];
+                });
+
+                if ($isDuplicate) continue; // ❌ Skip insert kalau tarikh ni dah ada
+
+                // ✅ Tarikh benar-benar baru → buat Application baru
+                $newApp = Application::create([
+                    'batch_id' => $batch_id,
+                    'room_id' => $applicationFirst->room_id,
+                    'tarikh_mula' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['start']),
+                    'tarikh_hingga' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['end']),
+                    'bilangan_tempahan' => $booking['bilangan_tempahan'] ?? 1,
+                    'nama_mesyuarat' => $applicationFirst->nama_mesyuarat,
+                    'kategori_pengerusi' => $applicationFirst->kategori_pengerusi,
+                    'nama_pengerusi' => $applicationFirst->nama_pengerusi,
+                    'perakuan' => 0,
+                    'created_by' => $supervisorRoom->id,
+                    'updated_by' => $supervisorRoom->id,
+                ]);
+            }
+        }
         // $room_users = Room::find($roomId)->users;
 
         foreach ($applicationIds as $applicationId) {
@@ -452,6 +495,11 @@ class ApplicationRoomController extends Controller
 
                 if ($request->button == '2') { // Lulus
                     $status_room_id = '2';
+                    $status_vc_id = '2';
+                }
+
+                if ($request->button == '14') { // Lulus dengan pindaan
+                    $status_room_id = '14';
                     $status_vc_id = '2';
                 }
 
@@ -502,12 +550,48 @@ class ApplicationRoomController extends Controller
 
             if (!$status_room_id) continue;
 
-            $dataRoom = [
-                'status_room_id' => $status_room_id,
-                'action_by' => $supervisorRoom->id,
-                'catatan_penyelia' => $request->catatan_room_penyelia,
-                'tarikh_keputusan' => now(),
-            ];
+            if ($request->button == '14' && $appRoom->status_room_id == '1') { // Lulus dengan pindaan
+
+                $dataApp = [
+                    'tarikh_mula' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['start']),
+                    'tarikh_hingga' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['end']),
+                    'bilangan_tempahan' => $request->bilangan_tempahan,
+                    'updated_by' => $supervisorRoom->id,
+                    'catatan_penyelia' => $request->catatan_room_penyelia,
+                    'updated_at' => $now,
+                ];
+
+                $dataRoom = [
+                    'status_room_id' => 14,
+                    'action_by' => $supervisorRoom->id,
+                    'catatan_penyelia' => $request->catatan_room_penyelia,
+                    'tarikh_keputusan' => $now,
+                ];
+
+                // ✅ Update aplikasi dan bilik sekali
+                $application->update($dataApp);
+                $appRoom->update($dataRoom);}
+
+            else{
+
+                $dataRoom = [
+                    'status_room_id' => $status_room_id,
+                    'action_by' => $supervisorRoom->id,
+                    'catatan_penyelia' => $request->catatan_room_penyelia,
+                    'tarikh_keputusan' => $now,
+                ];
+
+                if (in_array($request->button, ['4','12','13'])) {
+                    $dataRoom['komen_ditolak'] = $request->komen_ditolak;
+                }
+
+                if (in_array($status_room_id, ['13','7'])) {
+                    $dataRoom['tarikh_batal'] = now();
+                }
+
+                // ✅ Update bilik sahaja
+                $appRoom->update($dataRoom);
+            }
 
             if (in_array($request->button, ['4','12', '13'])) {
                 $dataRoom['komen_ditolak'] = $request->komen_ditolak;
@@ -517,6 +601,7 @@ class ApplicationRoomController extends Controller
                 $dataRoom['tarikh_batal'] = now();
             }
 
+            $application->update($dataApp);
             $appRoom->update($dataRoom);
 
             $appVc = ApplicationVc::where('application_id', $applicationId)->first();
@@ -537,47 +622,54 @@ class ApplicationRoomController extends Controller
 
         // Assign ApplicationRoom data for email content
         $komen_ditolak = null;
-        if ($applicationFirst->applicationRoom->status_room_id == '2') { //Lulus
+        if ($application->applicationRoom->status_room_id == '2') { //Lulus
             $msg = 'Permohonan telah diluluskan.';
             $action_pemohon = 'diluluskan';
         }
 
-        if ($applicationFirst->applicationRoom->status_room_id == '3') { //Permohonan Pembatalan
+        if ($application->applicationRoom->status_room_id == '3') { //Permohonan Pembatalan
         }
 
-        if ($applicationFirst->applicationRoom->status_room_id == '4') { //Tolak
+        if ($application->applicationRoom->status_room_id == '4') { //Tolak
             $msg = 'Permohonan telah ditolak.';
             $action_pemohon = 'ditolak';
             $komen_ditolak = $appRoom->komen_ditolak;
         }
 
-        if ($applicationFirst->applicationRoom->status_room_id == '5') { //Lulus Pembatalan
+        if ($application->applicationRoom->status_room_id == '5') { //Lulus Pembatalan
             $msg = 'Permohonan pembatalan telah diluluskan (Permohonan status BATAL).';
             $action_pemohon = 'diluluskan';
             //Maksudnya status Batal dan ada dalam kalendar
         }
 
-        if ($applicationFirst->applicationRoom->status_room_id == '6') { //Tolak Pembatalan
+        if ($application->applicationRoom->status_room_id == '6') { //Tolak Pembatalan
             $msg = 'Permohonan pembatalan tidak diluluskan (Permohonan kekal status LULUS).';
             $action_pemohon = 'ditolak';
             //Maksudnya status masih lulus dan ada dalam kalendar
         }
 
-        if ($applicationFirst->applicationRoom->status_room_id == '7') { // Pemohon membuat pembatalan permohonan Baru
+        if ($application->applicationRoom->status_room_id == '7') { // Pemohon membuat pembatalan permohonan Baru
             $msg = 'Permohonan telah dibatalkan.';
             $action_pemohon = 'dibatalkan oleh Pentadbir';
         }
 
-        if ($applicationFirst->applicationRoom->status_room_id == '12') { // Batal oleh pentadbir selepas kelulusan
+        if ($application->applicationRoom->status_room_id == '12') { // Batal oleh pentadbir selepas kelulusan
             $action_pemohon = 'dibatalkan oleh Pentadbir';
             $msg = 'Permohonan telah dibatalkan.';
             $komen_ditolak = $application->applicationRoom->komen_ditolak;
         }
 
-        if ($applicationFirst->applicationRoom->status_room_id == '13') { // Batal oleh pentadbir terhadap permohonan Baru
+        if ($application->applicationRoom->status_room_id == '13') { // Batal oleh pentadbir terhadap permohonan Baru
             $action_pemohon = 'dibatalkan oleh Pentadbir (permohonan baru)';
             $msg = 'Permohonan telah dibatalkan.';
             $komen_ditolak = $application->applicationRoom->komen_ditolak;
+        }
+
+        if ($application->applicationRoom->status_room_id == '14') { // Lulus dengan pindaan
+
+            $action_pemohon = 'diluluskan dengan pindaan oleh Pentadbir (permohonan baru)';
+            $msg = 'Permohonan telah diluluskan dengan pindaan.';
+            $komen_ditolak = '';
         }
 
         $nama_pengerusi = $application->nama_pengerusi ?? $application->kategori_pengerusi;
