@@ -92,7 +92,7 @@ class ApplicationController extends Controller
     }
 
     public function store(ApplicationRequest $request)
-    {
+    {       
         // dd($request->all(), $request->allFiles());
         $roomId = $request->input('room');
         $isAuto = $request->input('is_auto');
@@ -133,7 +133,6 @@ class ApplicationController extends Controller
 
                 $application = Application::create([
                     'batch_id' => $batch->id,
-                    'user_id' => Auth::id(),
                     'room_id' => $roomId,
                     'tarikh_mula' => $mula,
                     'tarikh_hingga' => $tamat,
@@ -202,9 +201,7 @@ class ApplicationController extends Controller
 
             $application_id = $application->id;
 
-            // $msg = 'Permohonan tempahan anda telah dihantar untuk diproses.';
-
-            // return redirect('/application/show/' . encrypt($application_id))->with('successMessage', $msg);
+            
 
         }); // ✅ closes DB::transaction
 
@@ -221,20 +218,28 @@ class ApplicationController extends Controller
             default => 'undefined 01: Ralat Permohonan',
         };
 
-         //collect data
+        //Collect data - date & Status
             $applications=  Application::where('batch_id', $application->batch_id)->get();
-        //Collect date
+      
             $tarikh_list = [];
 
             foreach ($applications as $app) {
                 $carbon_mula = \Carbon\Carbon::parse($app->tarikh_mula);
                 $carbon_hingga = \Carbon\Carbon::parse($app->tarikh_hingga);
 
+                // $status_room_id = optional($app->ApplicationRoom)->statusRoom->status_pemohon;
+                // $status_vc_id = optional($app->ApplicationVc)->statusVc->status_pemohon;
+
+                $status_room_id = optional($app->ApplicationRoom?->statusRoom)->status_pemohon;
+                $status_vc_id   = optional($app->ApplicationVc?->statusVc)->status_pemohon;
+
                 $tarikh_list[] = [
                     'tarikh_mula' => $carbon_mula->format('d/m/Y'),
                     'tarikh_hingga' => $carbon_hingga->format('d/m/Y'),
                     'masa_mula' => $carbon_mula->format('g:i A'),
                     'masa_hingga' => $carbon_hingga->format('g:i A'),
+                    'status_room_id' => $status_room_id,
+                    'status_vc_id'   => $status_vc_id,
                 ];
             }
 
@@ -415,13 +420,14 @@ class ApplicationController extends Controller
         ->with('successMessage', 'Permohonan berjaya dihantar.  Pemohon akan menerima notifikasi e-mel.');
 
         } catch (\Exception $e) {
-            \Log::error('Store failed: ' . $e->getMessage());
+            \Log::error('Store failed ApplicationController: ' . $e->getMessage());
             return back()->with('error', 'Ralat semasa menyimpan data.');
         }
     }
 
     public function createvc($batch_id)
     {
+        $batch_id = decrypt($batch_id);
         $applications = Application::where('batch_id', $batch_id)->get();
         $application = Application::where('batch_id', $batch_id)->first();
         $departments = Department::where('status', 'aktif')->orderBy('nama', 'ASC')->get();
@@ -439,6 +445,7 @@ class ApplicationController extends Controller
 
     public function storevc(Request $request, $batch_id)
     {
+        $batch_id = decrypt($batch_id);
         $request->validate(
             [
                 'vc_selected' => 'required',
@@ -519,7 +526,7 @@ class ApplicationController extends Controller
                 ];
             }
 
-            $senarai_tarikh = $tarikh_list;
+        $senarai_tarikh = $tarikh_list;
         //End Collect date
 
         $action_pemohon = 'dihantar untuk diproses';

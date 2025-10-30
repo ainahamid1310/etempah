@@ -185,11 +185,10 @@
                                 </ul>
 
                                 <!-- Tab Content -->
-                                <form action="/admin/application_room/result/{{ $application->batch_id }}" method="post">
-                                    {{ csrf_field() }}
+                               <form action="/admin/application_room/result/{{ $application->batch_id }}" method="post">
+                                {{ csrf_field() }}
                                     @csrf
                                     <div class="tab-content">
-
                                         <div class="card-header bg-white d-flex justify-content-between">
                                             <strong>Maklumat <a href="#" data-toggle="modal" data-target="#modal_default"> Pemohon </a><i
                                                     class="icon-info22 mr-3"></i></strong>
@@ -319,10 +318,15 @@
                                                                     </span>
                                                                 </div>
                                                             </td>
-                                                        
+
+                                                            <!-- <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
+                                                                <span class="availability-status small"></span>
+                                                            </td> -->
+
                                                             <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
                                                                 <span class="availability-status small"></span>
-                                                            </td>
+                                                            </td>                         
+                                                            
                                                             
                                                             <td class="text-center">
                                                                 @if ($booking['status_room_id'] == 13)
@@ -510,7 +514,11 @@
 
                                                 </div>
                                             </div>
-                                        
+
+                                            {{-- <div class="text-end">
+                                                <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya</a>
+                                            </div> --}}
+
                                             <div class="d-flex justify-content-end">
                                                 <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya >></a>
                                             </div>
@@ -636,7 +644,12 @@
                                             @else
                                                 <div class="text-center text-danger">-Tiada Permohonan-</div>
                                             @endif
-                                        
+
+
+                                            {{-- <div class="text-center">
+                                                <a href="#maklumat_permohonan" class="btn btn-secondary" id="prevBtn" data-toggle="tab">Kembali</a>
+                                                <a href="#maklumat_vc" class="btn btn-primary" id="nextBtn2" data-toggle="tab">Seterusnya</a>
+                                            </div> --}}
                                             <br>
                                             <div class="d-flex justify-content-between">
                                                 <a href="#maklumat_permohonan" id="prevBtn" class="btn btn-secondary"><< Kembali</a>
@@ -648,9 +661,30 @@
                                         <!-- Tab 3 -->
                                         <div class="tab-pane fade" id="maklumat_vc" role="tabpanel">
                                             @include('applications.vc.view')
-                                            <div class="card-footer">                                               
+                                            <div class="card-footer">
+                                                {{-- <fieldset>
+                                                    <legend><b><i>Perakuan</i></b></legend>
+                                                    <div>
+                                                        <div class="form-group">
+                                                            <div class="custom-control custom-checkbox">
+                                                                <input type="checkbox" class="custom-control-input @error('perakuan') is-invalid @enderror" name="perakuan"
+                                                                    id="perakuan" value="1">
+                                                                <label class="custom-control-label" for="perakuan">Pemohon
+                                                                    bertanggungjawab di
+                                                                    atas maklumat dan permohonan yang telah dibuat.</label>
+                                                            </div>
+                                                        </div>
+                                                        @error('perakuan')
+                                                            <div class="invalid-feedback d-block">
+                                                                <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                                            </div>
+                                                        @enderror
+
+                                                    </div>
+                                                </fieldset> --}}
+
                                                 <div class="d-flex justify-content-start">
-                                                    <a href="#maklumat_bilik" id="prevBtn2" class="btn btn-secondary"><< Kembali</a>
+                                                    <a href="#maklumat_bilik" id="preBtn2" class="btn btn-secondary"><< Kembali</a>
                                                 </div>
                                             </div>
 
@@ -659,16 +693,18 @@
                                     <div class="card-footer text-center">                    
                  
                       
-                                    <input type="hidden" name="_method" value="POST">
-                                    <input type="hidden" name="button" value="14">
+                        <input type="hidden" name="_method" value="POST">
+                        <input type="hidden" name="button" value="14">
 
-                                    <button type="submit"
-                                            class="btn btn-success btn-sm submit-btn btn-lulus-pindaan"
-                                            >
-                                        Lulus dengan Pindaan
-                                    </button> 
+                        <button type="submit"
+                                class="btn btn-success btn-sm submit-btn btn-lulus-pindaan"
+                              >
+                            Lulus dengan Pindaan
+                        </button>                                
+                       
+
                   
-                                </div>
+                </div>
 
                                 </form>
                             </div>

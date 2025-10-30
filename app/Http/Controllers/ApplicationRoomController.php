@@ -89,8 +89,10 @@ class ApplicationRoomController extends Controller
         //
     }
 
-    public function show($application)
-    {
+    public function show($batch_id)
+    {       
+        $batch_id = decrypt($batch_id);
+
         $departments = Department::orderBy('nama', 'ASC')->get();
 
         $positions = Position::orderBy('nama', 'ASC')->get();
@@ -101,11 +103,10 @@ class ApplicationRoomController extends Controller
 
         $user = User::where('id', $id)->first();
 
-        $profile = Profile::where('user_id', $id)->first();
+        $profile = Profile::where('user_id', $id)->first();        
 
-        $application = Application::findOrFail(decrypt($application));
-
-        $applications = Application::where('batch_id', $application->batch_id)->get();
+        $applications = Application::where('batch_id', $batch_id)->get();
+        $application = $applications->first();
 
         $tarikh_mula = Carbon::parse($application->tarikh_mula)->format('Y-m-d H:i:s');
         $toTime_new = Carbon::parse($tarikh_mula)->format('H:i:s');
@@ -176,7 +177,7 @@ class ApplicationRoomController extends Controller
                 ];
             }
         }
-
+       
         $department = $application->user->profile->department_id;
         $user =  User::find(Auth::id());
 
@@ -419,260 +420,383 @@ class ApplicationRoomController extends Controller
     }
 
     public function result(Request $request, $batch_id)
-    {
-        $supervisorRoom =  User::find(Auth::id());
+    {      
+        $supervisorRoom = Auth::user();
 
         $email_penyeliaVc = User::role('approver-vc')->pluck('email')->toArray();
 
         $applications = Application::where('batch_id', $batch_id)->get();
 
-        $applicationFirst = $applications->first();
-        $applicationRoom = $applicationFirst?->applicationRoom;
+        $applicationFirst = Application::where('batch_id', $batch_id)->first();
+        if (!$applicationFirst) {
+            return back()->withErrors(['batch' => 'Batch tidak ditemui.']);
+        }
 
         $applicationIds = Application::where('batch_id', $batch_id)->pluck('id');
 
-        $roomId = $applicationFirst->room_id;
-        $now = now();
+        if ($request->button == '14') { // ✅ Lulus dengan Pindaan
+            // ✅ 1. SEMAKAN OVERLAP 
+            $room_id = $applicationFirst->room_id;
 
-        // ===== Tambah Rekod Baru Jika Ada Row Baru (tiada ID) =====
-        if ($request->has('bookings')) {
-            // Ambil semua tarikh sedia ada bagi batch
-            $existing = Application::where('batch_id', $batch_id)
-                ->get(['tarikh_mula', 'tarikh_hingga'])
-                ->map(function ($a) {
-                    return [
-                        'start' => $a->tarikh_mula->format('d/m/Y H:i'),
-                        'end' => $a->tarikh_hingga->format('d/m/Y H:i'),
-                    ];
-                })->toArray();
+            foreach ($request->bookings as $booking) {
+                if (empty($booking['start']) || empty($booking['end'])) {
+                    continue;
+                }
+
+                $tarikh_mula = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['start']);
+                $tarikh_hingga = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['end']);
+
+                // Semakan overlap dgn rekod sedia ada
+                $isClash = \App\Models\Application::where('room_id', $room_id)
+                    ->join('application_rooms', 'applications.id', '=', 'application_rooms.application_id')
+                    ->whereIn('application_rooms.status_room_id', [2, 3, 6, 14])
+                    ->where(function ($query) use ($tarikh_mula, $tarikh_hingga) {
+                        $query->where('tarikh_mula', '<', $tarikh_hingga)
+                            ->where('tarikh_hingga', '>', $tarikh_mula);
+                    })
+                    ->when(!empty($booking['id']), function ($q) use ($booking) {
+                        $q->where('applications.id', '!=', $booking['id']);
+                    })
+                    ->exists();
+
+                if ($isClash) {
+                    return back()->with('error', '❌ Tarikh tempahan bertindih dengan tempahan lain.');
+
+                }
+            }
+
+            // ✅ 2. SEMAK SESAMA TEMPAHAN BARU
+            $parsed = collect($request->bookings)
+                ->filter(fn($b) => !empty($b['start']) && !empty($b['end']))
+                ->map(fn($b) => [
+                    'start' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $b['start']),
+                    'end' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $b['end']),
+                ])
+                ->sortBy('start')
+                ->values();
+
+            for ($i = 0; $i < $parsed->count() - 1; $i++) {
+                $curr = $parsed[$i];
+                $next = $parsed[$i + 1];
+
+                if ($next['start'] < $curr['end']) {
+                    return back()->withErrors([
+                        'bookings' => "⚠️ Tempahan baharu bertindih antara {$curr['start']->format('d/m/Y H:i')} dan {$next['start']->format('d/m/Y H:i')}."
+                    ])->withInput();
+                }
+            }
+              
+       
+            $status_room_id = 14;
+            $status_vc_id = 2;
+          
+            // Dapatkan semua ID yang dihantar dari form
+            $bookingIds = collect($request->bookings)->pluck('id')->filter()->toArray();
+
+            // Update status_room_id bagi semua application lain dalam batch yang tak termasuk dalam booking baru
+            $existingApplications = \App\Models\Application::where('batch_id', $batch_id)
+                ->whereNotIn('id', $bookingIds)
+                ->whereHas('applicationRoom', function ($query) {
+                    $query->where('status_room_id', 1);
+                })
+                ->get();
+
+            foreach ($existingApplications as $oldApp) {
+                $oldApp->applicationRoom()->update([
+                    'status_room_id' => $status_room_id, 
+                    'action_by' => $supervisorRoom->id,
+                    'catatan_penyelia' => $request->catatan_room_penyelia,
+                    'tarikh_keputusan' => now(),
+                ]);
+                $oldApp->applicationVc()->update([
+                    'status_vc_id' => $status_vc_id, 
+                    'action_by' => $supervisorRoom->id,
+                    'catatan_penyelia' => $request->catatan_vc_penyelia,
+                    'tarikh_keputusan' => now(),
+                ]);                
+            }
 
             foreach ($request->bookings as $booking) {
 
-                // Skip kalau baris lama (ada ID)
-                if (!empty($booking['id'])) continue;
+                // Pastikan tarikh lengkap
+                if (empty($booking['start']) || empty($booking['end'])) {
+                    continue;
+                }
 
-                // Skip kalau tarikh tak lengkap
-                if (empty($booking['start']) || empty($booking['end'])) continue;
+                // Formatkan tarikh daripada dd/mm/yyyy H:i
+                $tarikh_mula = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['start']);
+                $tarikh_hingga = \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['end']);             
 
-                // Check sama ada tarikh ni dah wujud dalam senarai asal
-                $isDuplicate = collect($existing)->contains(function ($exist) use ($booking) {
-                    return $exist['start'] === $booking['start'] && $exist['end'] === $booking['end'];
-                });
+                // Jika booking ada ID, update yang sedia ada
+                if (!empty($booking['id'])) {
 
-                if ($isDuplicate) continue; // ❌ Skip insert kalau tarikh ni dah ada
+                    $app = \App\Models\Application::find($booking['id']);
 
-                // ✅ Tarikh benar-benar baru → buat Application baru
-                $newApp = Application::create([
-                    'batch_id' => $batch_id,
-                    'room_id' => $applicationFirst->room_id,
-                    'tarikh_mula' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['start']),
-                    'tarikh_hingga' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['end']),
-                    'bilangan_tempahan' => $booking['bilangan_tempahan'] ?? 1,
-                    'nama_mesyuarat' => $applicationFirst->nama_mesyuarat,
-                    'kategori_pengerusi' => $applicationFirst->kategori_pengerusi,
-                    'nama_pengerusi' => $applicationFirst->nama_pengerusi,
-                    'perakuan' => 0,
-                    'created_by' => $supervisorRoom->id,
-                    'updated_by' => $supervisorRoom->id,
-                ]);
+                    if ($app) {
+                        $app->update([
+                            'tarikh_mula' => $tarikh_mula,
+                            'tarikh_hingga' => $tarikh_hingga,                            
+                            'room_id' => $request->room,                            
+                            'bilangan_tempahan' => $request->bilangan_tempahan,                            
+                            'updated_by' => $supervisorRoom->id,
+                            'updated_at' => now(),
+                        ]);
+
+                        $app->applicationRoom?->update([
+                            'status_room_id' => $status_room_id,
+                            'action_by' => $supervisorRoom->id,
+                            'catatan_penyelia' => $request->catatan_room_penyelia,
+                            'tarikh_keputusan' => now(),
+                        ]);
+
+                        $app->applicationVc?->update([
+                            'status_vc_id' => $status_vc_id, 
+                            'action_by' => $supervisorRoom->id,
+                            'catatan_penyelia' => $request->catatan_vc_penyelia,
+                            'tarikh_keputusan' => now(),
+                        ]);
+                    }
+
+                } else {
+
+                    if (empty($booking['start']) || empty($booking['end'])) {
+                        continue; // pastikan betul-betul ada tarikh
+                    }
+
+                    // Check jika tarikh ini sudah ada dalam batch
+                    $exists = \App\Models\Application::where('batch_id', $batch_id)
+                        ->where('tarikh_mula', \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['start']))
+                        ->where('tarikh_hingga', \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['end']))
+                        ->exists();
+
+                    if ($exists) {
+                        continue; // skip kalau tarikh ni sebenarnya dah ada
+                    }
+
+                    // Jika tiada ID → Tambah tarikh baru
+                    $applicationFirst = \App\Models\Application::where('batch_id', $batch_id)->first();
+
+                    if ($applicationFirst) {
+                        $newApp = \App\Models\Application::create([
+                            'batch_id' => $applicationFirst->batch_id,
+                            'user_id' => $applicationFirst->user_id,
+                            'room_id' => $request->room,
+                            'tarikh_mula' => $tarikh_mula,
+                            'tarikh_hingga' => $tarikh_hingga,
+                            'nama_mesyuarat' => $applicationFirst->nama_mesyuarat,
+                            'kategori_pengerusi' => $applicationFirst->kategori_pengerusi,
+                            'nama_pengerusi' => $applicationFirst->nama_pengerusi,
+                            'bilangan_tempahan' => $request->bilangan_tempahan,
+                            'perakuan' => 0,
+                            'nama_pengerusi' => $applicationFirst->nama_pengerusi,                            
+                            'created_by' => $supervisorRoom->id,//
+                            'created_at' => now(),                            
+                        ]);
+
+                        $newApp->applicationRoom()->create([
+                            'status_room_id' => 14,
+                            'nama_urusetia' => $applicationFirst->applicationRoom->nama_urusetia,
+                            'position_id' => $applicationFirst->applicationRoom->position_id,
+                            'department_id' => $applicationFirst->applicationRoom->department_id,
+                            'emel_urusetia' => $applicationFirst->applicationRoom->emel_urusetia,
+                            'no_extension_urusetia' => $applicationFirst->applicationRoom->no_extension_urusetia,
+                            'no_telefon_bimbit_urusetia' => $applicationFirst->applicationRoom->no_telefon_bimbit_urusetia,
+                            'kategori_mesyuarat' => $applicationFirst->applicationRoom->kategori_mesyuarat,
+                            'surat' => $applicationFirst->applicationRoom->surat,                            
+                            'penganjur' => $applicationFirst->applicationRoom->penganjur,
+                            'nama_penganjur' => $applicationFirst->applicationRoom->nama_penganjur,
+                            'ahli' => $applicationFirst->applicationRoom->ahli,
+                            'sajian' => $applicationFirst->applicationRoom->sajian,
+                            'minum_pagi' => $applicationFirst->applicationRoom->minum_pagi,
+                            'makan_tengahari' => $applicationFirst->applicationRoom->makan_tengahari,
+                            'minum_petang' => $applicationFirst->applicationRoom->minum_petang,
+                            'catatan' => $applicationFirst->applicationRoom->catatan,
+                            'action_by' => $supervisorRoom->id,
+                            'catatan_penyelia' => $request->catatan_penyelia,
+                            'tarikh_keputusan' => now(),
+                            'created_at' => now(),
+                            'created_by' => $supervisorRoom->id,
+                            'updated_at' => now(),
+                            'updated_by' => $supervisorRoom->id,
+                        ]);
+
+                        $newApp->applicationVc()->create([                           
+                            'application_id' => $applicationFirst->id,
+                            'status_vc_id' => $applicationFirst->applicationVc->status_vc_id,
+                            'webex' => $applicationFirst->applicationVc->webex,
+                            'nama_aplikasi' => $applicationFirst->applicationVc->nama_aplikasi,
+                            'peralatan' => $applicationFirst->applicationVc->peralatan,
+                            'catatan' => $applicationFirst->applicationVc->catatan,
+                            'catatan_penyelia' => $applicationFirst->applicationVc->catatan_penyelia,                                                   
+                            'created_by' => $supervisorRoom->id,//
+                            'created_at' => now(),          
+                            'updated_by' => $supervisorRoom->id,//
+                            'updated_at' => now(),                            
+                        ]);
+                    }
+                }
             }
-        }
-        // $room_users = Room::find($roomId)->users;
 
-        foreach ($applicationIds as $applicationId) {
+        } else{
 
-            $status_room_id = null;
-            $status_vc_id = null;
+            foreach ($applicationIds as $applicationId) {
 
-            $application = Application::find($applicationId);
-            if (!$application) continue;
+                $status_room_id = null;
+                $status_vc_id = null;
 
-            $appRoom = ApplicationRoom::where('application_id', $applicationId)->first();
-            if (!$appRoom) continue;
+                $application = Application::find($applicationId);
+                if (!$application) continue;
 
-            // Status semasa = Baru (1)
-            if ($appRoom->status_room_id == '1') {
+                $appRoom = ApplicationRoom::where('application_id', $applicationId)->first();
+                if (!$appRoom) continue;
 
-                if ($request->button == '2') { // Lulus
-                    $status_room_id = '2';
-                    $status_vc_id = '2';
+                // Status semasa = Baru (1)
+                if ($appRoom->status_room_id == '1') {
+
+                    if ($request->button == '2') { // Lulus
+                        $status_room_id = '2';
+                        $status_vc_id = '2';
+                    }       
+                    
+                    if ($request->button == '14') { // Lulus dengan pindaan
+                        $status_room_id = '14';
+                        $status_vc_id = '2';
+                    }     
+
+                    if ($request->button == '4') { // Tolak
+                        $status_room_id = '4';
+                        $status_vc_id = '4';
+                    }
+
+                    if ($request->button == '13') { // Batal oleh pentadbir
+                        $status_room_id = '13';
+                        $status_vc_id = '11';
+                    }
+
+                    if ($request->button == '7') { // Batal oleh pemohon -> tiada perubahan kpd VC kerana status VC masih draf
+                        $status_room_id = '7';
+                        $status_vc_id = '5';
+                    }
+
+                    $appRoom->catatan_penyelia = $request->catatan_room_penyelia;
                 }
 
-                if ($request->button == '14') { // Lulus dengan pindaan
-                    $status_room_id = '14';
-                    $status_vc_id = '2';
+                // Status semasa = Lulus (2)
+                if ($appRoom->status_room_id == '2' || $appRoom->status_room_id == '14') { //Lulus & Lulus dengan Pindaan
+                    // return 'batal oleh pentadbir 2';
+
+                    if ($request->button == '12')// Batal oleh Pentadbir selepas lulus
+                    {
+                        $status_room_id = '12';
+                        $status_vc_id = '11';
+                    }
                 }
 
-                if ($request->button == '4') { // Tolak
-                    $status_room_id = '4';
-                    $status_vc_id = '4';
+                // Status semasa = Menunggu keputusan pembatalan (3)
+                if ($appRoom->status_room_id == '3') {
+
+                    if ($request->button == '5') { // Lulus pembatalan
+                        $status_room_id = '5';
+                        $status_vc_id = '5';
+                    }
+
+                    if ($request->button == '6') { // Tolak pembatalan
+                        $status_room_id = '6';
+                        $status_vc_id = $application->applicationVc?->status_vc_id;
+                    }
                 }
 
-                if ($request->button == '13') { // Batal oleh pentadbir
-                    $status_room_id = '13';
-                    $status_vc_id = '11';
-                }
+                //Status (4 = Tolak, 5 = Lulus Pembatalan, 6 = Ditolak Pembatalan (Lulus), 7 = Batal oleh Pemohon, 12 = Batal oleh Pentadbir selepas kelulusan,13 = Batal oleh Pentadbir sebelum kelulusan)-> end of action by Approver
 
-                if ($request->button == '7') { // Batal oleh pemohon -> tiada perubahan kpd VC kerana status VC masih draf
-                    $status_room_id = '7';
-                    $status_vc_id = '5';
-                }
-
-                $appRoom->catatan_penyelia = $request->catatan_room_penyelia;
-            }
-
-            // Status semasa = Lulus (2)
-            if ($appRoom->status_room_id == '2' || $appRoom->status_room_id == '14') { //Lulus & Lulus dengan Pindaan
-                // return 'batal oleh pentadbir 2';
-
-                if ($request->button == '12')// Batal oleh Pentadbir selepas lulus
-                {
-                    $status_room_id = '12';
-                    $status_vc_id = '11';
-                }
-            }
-
-            // Status semasa = Menunggu keputusan pembatalan (3)
-            if ($appRoom->status_room_id == '3') {
-
-                if ($request->button == '5') { // Lulus pembatalan
-                    $status_room_id = '5';
-                    $status_vc_id = '5';
-                }
-
-                if ($request->button == '6') { // Tolak pembatalan
-                    $status_room_id = '6';
-                    $status_vc_id = $application->applicationVc?->status_vc_id;
-                }
-            }
-
-            //Status (4 = Tolak, 5 = Lulus Pembatalan, 6 = Ditolak Pembatalan (Lulus), 7 = Batal oleh Pemohon, 12 = Batal oleh Pentadbir selepas kelulusan,13 = Batal oleh Pentadbir sebelum kelulusan)-> end of action by Approver
-
-            if (!$status_room_id) continue;
-
-            if ($request->button == '14' && $appRoom->status_room_id == '1') { // Lulus dengan pindaan
-
-                $dataApp = [
-                    'tarikh_mula' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['start']),
-                    'tarikh_hingga' => \Carbon\Carbon::createFromFormat('d/m/Y H:i', $booking['end']),
-                    'bilangan_tempahan' => $request->bilangan_tempahan,
-                    'updated_by' => $supervisorRoom->id,
-                    'catatan_penyelia' => $request->catatan_room_penyelia,
-                    'updated_at' => $now,
-                ];
-
-                $dataRoom = [
-                    'status_room_id' => 14,
-                    'action_by' => $supervisorRoom->id,
-                    'catatan_penyelia' => $request->catatan_room_penyelia,
-                    'tarikh_keputusan' => $now,
-                ];
-
-                // ✅ Update aplikasi dan bilik sekali
-                $application->update($dataApp);
-                $appRoom->update($dataRoom);}
-
-            else{
+                if (!$status_room_id) continue;
 
                 $dataRoom = [
                     'status_room_id' => $status_room_id,
                     'action_by' => $supervisorRoom->id,
                     'catatan_penyelia' => $request->catatan_room_penyelia,
-                    'tarikh_keputusan' => $now,
+                    'tarikh_keputusan' => now(),
                 ];
 
-                if (in_array($request->button, ['4','12','13'])) {
+                if (in_array($request->button, ['4','12', '13'])) {
                     $dataRoom['komen_ditolak'] = $request->komen_ditolak;
                 }
 
-                if (in_array($status_room_id, ['13','7'])) {
+                if (in_array($status_room_id, ['13', '7'])) {
                     $dataRoom['tarikh_batal'] = now();
                 }
 
-                // ✅ Update bilik sahaja
                 $appRoom->update($dataRoom);
-            }
 
-            if (in_array($request->button, ['4','12', '13'])) {
-                $dataRoom['komen_ditolak'] = $request->komen_ditolak;
-            }
+                $appVc = ApplicationVc::where('application_id', $applicationId)->first();
+                if (!$appVc) continue;
 
-            if (in_array($status_room_id, ['13', '7'])) {
-                $dataRoom['tarikh_batal'] = now();
-            }
+                // if (!$status_vc_id) continue;
 
-            $application->update($dataApp);
-            $appRoom->update($dataRoom);
+                $dataVc = [
+                    'status_vc_id' => $status_vc_id,
+                    'action_by' => $supervisorRoom->id,
+                    'catatan_penyelia' => $request->catatan_room_penyelia,
+                    'tarikh_keputusan' => now(),
+                ];
 
-            $appVc = ApplicationVc::where('application_id', $applicationId)->first();
-            if (!$appVc) continue;
-
-            // if (!$status_vc_id) continue;
-
-            $dataVc = [
-                'status_vc_id' => $status_vc_id,
-                'action_by' => $supervisorRoom->id,
-                'catatan_penyelia' => $request->catatan_room_penyelia,
-                'tarikh_keputusan' => now(),
-            ];
-
-            $appVc->update($dataVc);
+                $appVc->update($dataVc);
+                    
+            }            
         }
-        // return $applicationFirst->applicationRoom->status_room_id;
 
+        // $application = Application::where('batch_id', $batch_id)->first();
+        // $applicationFirst->applicationRoom->status_room_id;
         // Assign ApplicationRoom data for email content
         $komen_ditolak = null;
-        if ($application->applicationRoom->status_room_id == '2') { //Lulus
+        if ($applicationFirst->applicationRoom->status_room_id == '2') { //Lulus
             $msg = 'Permohonan telah diluluskan.';
             $action_pemohon = 'diluluskan';
         }
 
-        if ($application->applicationRoom->status_room_id == '3') { //Permohonan Pembatalan
+        if ($applicationFirst->applicationRoom->status_room_id == '14') { //Lulus Dengan Pindaan
+            $msg = 'Permohonan telah diluluskan dengan pindaan.';
+            $action_pemohon = 'diluluskan dengan pindaan';
         }
 
-        if ($application->applicationRoom->status_room_id == '4') { //Tolak
+        if ($applicationFirst->applicationRoom->status_room_id == '3') { //Permohonan Pembatalan
+        }
+
+        if ($applicationFirst->applicationRoom->status_room_id == '4') { //Tolak
             $msg = 'Permohonan telah ditolak.';
             $action_pemohon = 'ditolak';
             $komen_ditolak = $appRoom->komen_ditolak;
         }
 
-        if ($application->applicationRoom->status_room_id == '5') { //Lulus Pembatalan
+        if ($applicationFirst->applicationRoom->status_room_id == '5') { //Lulus Pembatalan
             $msg = 'Permohonan pembatalan telah diluluskan (Permohonan status BATAL).';
             $action_pemohon = 'diluluskan';
             //Maksudnya status Batal dan ada dalam kalendar
         }
 
-        if ($application->applicationRoom->status_room_id == '6') { //Tolak Pembatalan
+        if ($applicationFirst->applicationRoom->status_room_id == '6') { //Tolak Pembatalan
             $msg = 'Permohonan pembatalan tidak diluluskan (Permohonan kekal status LULUS).';
             $action_pemohon = 'ditolak';
             //Maksudnya status masih lulus dan ada dalam kalendar
         }
 
-        if ($application->applicationRoom->status_room_id == '7') { // Pemohon membuat pembatalan permohonan Baru
+        if ($applicationFirst->applicationRoom->status_room_id == '7') { // Pemohon membuat pembatalan permohonan Baru
             $msg = 'Permohonan telah dibatalkan.';
             $action_pemohon = 'dibatalkan oleh Pentadbir';
         }
 
-        if ($application->applicationRoom->status_room_id == '12') { // Batal oleh pentadbir selepas kelulusan
+        if ($applicationFirst->applicationRoom->status_room_id == '12') { // Batal oleh pentadbir selepas kelulusan
             $action_pemohon = 'dibatalkan oleh Pentadbir';
             $msg = 'Permohonan telah dibatalkan.';
             $komen_ditolak = $application->applicationRoom->komen_ditolak;
         }
 
-        if ($application->applicationRoom->status_room_id == '13') { // Batal oleh pentadbir terhadap permohonan Baru
+        if ($applicationFirst->applicationRoom->status_room_id == '13') { // Batal oleh pentadbir terhadap permohonan Baru
             $action_pemohon = 'dibatalkan oleh Pentadbir (permohonan baru)';
             $msg = 'Permohonan telah dibatalkan.';
-            $komen_ditolak = $application->applicationRoom->komen_ditolak;
+            $komen_ditolak = $applicationFirst->applicationRoom->komen_ditolak;
         }
 
-        if ($application->applicationRoom->status_room_id == '14') { // Lulus dengan pindaan
-
-            $action_pemohon = 'diluluskan dengan pindaan oleh Pentadbir (permohonan baru)';
-            $msg = 'Permohonan telah diluluskan dengan pindaan.';
-            $komen_ditolak = '';
-        }
-
-        $nama_pengerusi = $application->nama_pengerusi ?? $application->kategori_pengerusi;
+        $nama_pengerusi = $applicationFirst->nama_pengerusi ?? $applicationFirst->kategori_pengerusi;
 
         //close for email content ApplicationRoom
         if($applicationFirst->applicationRoom->status_room_id == '5' || $applicationFirst->applicationRoom->status_room_id == '6'){
@@ -725,7 +849,7 @@ class ApplicationRoomController extends Controller
 
             // Komen ditolak jika bilik ditolak
             $vc_komen_ditolak = $vc->komen_ditolak;
-            if ($application->applicationRoom->status_room_id == 4 && is_null($vc_komen_ditolak)) {
+            if ($applicationFirst->applicationRoom->status_room_id == 4 && is_null($vc_komen_ditolak)) {
                 $note = '(kerana permohonan bilik telah ditolak)';
             } else {
                 $vc_komen_ditolak = '';
@@ -820,18 +944,23 @@ class ApplicationRoomController extends Controller
             $vc_komen_ditolak = null;
         }
 
-        //Collect date
+        //Collect data - date & Status
             $tarikh_list = [];
 
             foreach ($applications as $app) {
                 $carbon_mula = \Carbon\Carbon::parse($app->tarikh_mula);
                 $carbon_hingga = \Carbon\Carbon::parse($app->tarikh_hingga);
+                
+                $status_room_id = optional($app->ApplicationRoom)->statusRoom->status_pemohon;
+                $status_vc_id = optional($app->ApplicationVc)->statusVc->status_pemohon;
 
                 $tarikh_list[] = [
                     'tarikh_mula' => $carbon_mula->format('d/m/Y'),
                     'tarikh_hingga' => $carbon_hingga->format('d/m/Y'),
                     'masa_mula' => $carbon_mula->format('g:i A'),
                     'masa_hingga' => $carbon_hingga->format('g:i A'),
+                    'status_room_id' => $status_room_id,
+                    'status_vc_id'   => $status_vc_id,
                 ];
             }
 
@@ -839,31 +968,31 @@ class ApplicationRoomController extends Controller
             //End Collect date
 
             $data = array(
-                'to_pemohon' => $application->user->email,
+                'to_pemohon' => $applicationFirst->user->email,
                 'tempahan' => $tempahan,
                 'to_penyelia_vc' => $email_penyeliaVc,
-                'subject_pemohon' => 'Makluman: Permohonan ' . ucwords(strtolower($action_penyelia2)) . ' Tempahan ' . $tempahan . ' di ' . $application->room->nama . ' '.$action_pemohon,
-                'subject_pemohon' => 'Makluman: Permohonan ' . ucwords(strtolower($action_penyelia2)) . ' Tempahan ' . $tempahan . ' di ' . $application->room->nama,
-                'subject_penyelia_vc' => 'Makluman : Permohonan Baru Tempahan VC di ' . $application->room->nama . $action_penyelia_vc,
+                'subject_pemohon' => 'Makluman: Permohonan ' . ucwords(strtolower($action_penyelia2)) . ' Tempahan ' . $tempahan . ' di ' . $applicationFirst->room->nama . ' '.$action_pemohon,
+                'subject_pemohon' => 'Makluman: Permohonan ' . ucwords(strtolower($action_penyelia2)) . ' Tempahan ' . $tempahan . ' di ' . $applicationFirst->room->nama,
+                'subject_penyelia_vc' => 'Makluman : Permohonan Baru Tempahan VC di ' . $applicationFirst->room->nama . $action_penyelia_vc,
                 'tarikh_list' => $tarikh_list,
-                'subject_penyelia_vc' => 'Makluman : Permohonan Baru Tempahan VC di ' . $application->room->nama, ''. $action_penyelia_vc,
+                'subject_penyelia_vc' => 'Makluman : Permohonan Baru Tempahan VC di ' . $applicationFirst->room->nama, ''. $action_penyelia_vc,
                 'action_pemohon' => $action_pemohon,
                 'action_penyelia2' => $action_penyelia2,
                 'action_penyelia_vc' => $action_penyelia_vc,
-                'id' => $application->id,
-                'batch_id' => $application->batch_id,
-                'nama_pemohon' => $application->user->name,
-                'bahagian_pemohon' => $application->user->profile->department->nama,
-                'nama_mesyuarat' => $application->nama_mesyuarat,
-                'bilik' => $application->room->nama,
-                'status_bilik' => $application->applicationRoom->statusRoom->status_pemohon,
-                'status_bilik_id' => $application->applicationRoom->status_room_id,
+                'id' => $applicationFirst->id,
+                'batch_id' => $applicationFirst->batch_id,
+                'nama_pemohon' => $applicationFirst->user->name,
+                'bahagian_pemohon' => $applicationFirst->user->profile->department->nama,
+                'nama_mesyuarat' => $applicationFirst->nama_mesyuarat,
+                'bilik' => $applicationFirst->room->nama,
+                'status_bilik' => $applicationFirst->applicationRoom->statusRoom->status_pemohon,
+                'status_bilik_id' => $applicationFirst->applicationRoom->status_room_id,
                 'komen_ditolak' => $komen_ditolak,
                 'senarai_tarikh' => $senarai_tarikh,
                 'nama_pengerusi' => $nama_pengerusi,
-                'bilangan_tempahan' => $application->bilangan_tempahan,
-                'catatan_room' => $application->applicationRoom->catatan,
-                'catatan_room_penyelia' => $application->applicationRoom->catatan_penyelia,
+                'bilangan_tempahan' => $applicationFirst->bilangan_tempahan,
+                'catatan_room' => $applicationFirst->applicationRoom->catatan,
+                'catatan_room_penyelia' => $applicationFirst->applicationRoom->catatan_penyelia,
                 'apply_vc' => $apply_vc,
                 'status_vc_id' => $status_vc_id,
                 'status_vc' => $status_vc,
@@ -880,8 +1009,8 @@ class ApplicationRoomController extends Controller
                 'vc_komen_ditolak' => $vc_komen_ditolak,
             );
 
-        if (!empty($application->applicationVc)) {
-            if ($request->button == '2' || $application->applicationRoom->status_room_id == '13') {
+        if (!empty($applicationFirst->applicationVc)) {
+            if ($request->button == '2' || $applicationFirst->applicationRoom->status_room_id == '13') {
                 //bila penyelia bilik luluskan bilik, status vc akan bertukar kepada dalam proses.  So email perlu dihantar kpd penyelia vc.
                 Mail::send(['html' => 'emails.penyelia_vc'], $data, function ($message) use ($data) {
                     $message->subject($data['subject_penyelia_vc']);
@@ -907,28 +1036,94 @@ class ApplicationRoomController extends Controller
             $message->from('eTempah@miti.gov.my', "eTempah");
         });
 
-        return redirect('/admin/application_room/show/' . encrypt($application->id))->with('successMessage', $msg);
+        return redirect('/admin/application_room/show/' . encrypt($applicationFirst->batch_id))->with('successMessage', $msg);
             // return $application;
     }
 
-    public function resultEdit($applicationId)
-    {
-        $rooms = ApplicationRoom::where('application_id', $applicationId)->get();
+    // public function resultEdit($id)
+    // {
+    //    $application = Application::find($id);
 
-        if ($rooms->isEmpty()) {
-            return response()->json(['success' => false, 'message' => 'Tiada bilik ditemui.']);
-        }
 
-        foreach ($rooms as $room) {
-            $room->update([
-                'status_room_id' => 13,
-                'cancelled_by_admin' => true,
-                'cancel_reason' => 'Pindaan semasa kelulusan'
+    //     if (!$application){
+    //         return response()->json(['success' => false, 'message' => 'Tiada bilik ditemui.']);
+    //     }
+       
+    //     $application->applicationRoom->update([
+    //         'status_room_id' => 13,
+    //         'cancelled_by_admin' => true,
+    //         'cancel_reason' => 'Pindaan semasa kelulusan'
+    //     ]);
+      
+    //     $application->applicationVc->update([
+    //         'status_vc_id' => 11,//Batal oleh pentadbir bilik
+    //         'cancelled_by_admin' => true,
+    //         'cancel_reason' => 'Pindaan semasa kelulusan'
+    //     ]);
+      
+
+    //     return response()->json(['success' => true]);
+    // }
+
+    public function resultEdit($id)
+{
+    $application = Application::find($id);
+
+    if (!$application) {
+        return response()->json(['success' => false, 'message' => 'Tiada bilik ditemui.']);
+    }
+
+    $room = $application->applicationRoom;
+    $vc   = $application->applicationVc;
+
+    // Semak sama ada sedang dibatalkan atau aktif
+    $isCancelled = $room && $room->status_room_id == 13;
+
+    if ($isCancelled) {
+        // ✅ Nyah batal
+        $room->update([
+            'status_room_id' => 1, // contoh: Aktif semula
+            'cancelled_by_admin' => false,
+            'cancel_reason' => null,
+        ]);
+
+        if ($vc) {
+            $vc->update([
+                'status_vc_id' => 1, // contoh: Aktif semula
+                'cancelled_by_admin' => false,
+                'cancel_reason' => null,
             ]);
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'toggled' => 'un-cancelled',
+            'message' => 'Tempahan telah diaktifkan semula.'
+        ]);
+    } else {
+        // 🚫 Batal
+        $room->update([
+            'status_room_id' => 13,
+            'cancelled_by_admin' => true,
+            'cancel_reason' => 'Pindaan semasa kelulusan',
+        ]);
+
+        if ($vc) {
+            $vc->update([
+                'status_vc_id' => 11,
+                'cancelled_by_admin' => true,
+                'cancel_reason' => 'Pindaan semasa kelulusan',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'toggled' => 'cancelled',
+            'message' => 'Tempahan telah dibatalkan.'
+        ]);
     }
+}
+
 
     /**
      * Remove the specified resource from storage.

@@ -62,23 +62,7 @@
                 removeDateError(e);            // ✅ Buang error sebelum ini
                 markInvalidSequenceRows();     // ✅ Semak susunan tarikh terkini
             });
-        });
-
-        // function removeDateError(e) {
-        //     const input = e.target;
-
-        //     // Buang class is-invalid jika ada (optional kalau anda guna)
-        //     input.classList.remove('is-invalid');
-
-        //     // Cari elemen error icon (input-group-append) dalam input-group dan buang
-        //     const group = input.closest('.input-group');
-        //     if (!group) return;
-
-        //     const errorIcon = group.querySelector('.input-group-append');
-        //     if (errorIcon) {
-        //         errorIcon.remove();
-        //     }
-        // }
+        });   
 
     });
 
@@ -99,7 +83,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-
 
     }
         a.disabled {
@@ -128,21 +111,22 @@
         opacity: 0.6;           /* bagi pudar */
         cursor: not-allowed;    /* tukar cursor */
     }
+
     .error-border {
     border: 2px solid red !important;
     background-color: #ffe6e6; /* light red */
     }
 
 </style>
-@if ($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            {{-- @foreach ($errors->all() as $error) --}}
-                <li>Sila lengkapkan borang permohonan.</li>
-            {{-- @endforeach --}}
-        </ul>
-    </div>
-@endif
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                {{-- @foreach ($errors->all() as $error) --}}
+                    <li>Sila lengkapkan borang permohonan.</li>
+                {{-- @endforeach --}}
+            </ul>
+        </div>
+    @endif
 
     <body>
         <div class="card">
@@ -156,358 +140,361 @@
                     </div>
                 @endif
 
-                    <div class="tab-content">
+                <div class="tab-content">
 
-                        <div class="card">
+                    <div class="card">
 
-                            <div class="card-header">
-                                <h5 class="mb-0">Permohonan Tempahan</h5>
-                            </div>
+                        <div class="card-header">
+                            <h5 class="mb-0">Permohonan Tempahan</h5>
+                        </div>
 
-                            <div class="card-body">
+                        <div class="card-body">
 
-                                <ul class="nav nav-pills nav-justified mb-3" role="tablist">
-                                    <li class="nav-item">
-                                        <a class="nav-link active" data-toggle="tab" href="#maklumat_permohonan" role="tab">
-                                            Maklumat Permohonan
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="tab-bilik" data-toggle="tab" href="#maklumat_bilik" role="tab">
-                                            Permohonan Tempahan Bilik
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" data-toggle="tab" href="#maklumat_vc" role="tab">
-                                            Permohonan Tempahan VC
-                                        </a>
-                                    </li>
-                                </ul>
+                            <ul class="nav nav-pills nav-justified mb-3" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#maklumat_permohonan" role="tab">
+                                        Maklumat Permohonan
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="tab-bilik" data-toggle="tab" href="#maklumat_bilik" role="tab">
+                                        Permohonan Tempahan Bilik
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#maklumat_vc" role="tab">
+                                        Permohonan Tempahan VC
+                                    </a>
+                                </li>
+                            </ul>
 
-                                <!-- Tab Content -->
-                                <form id="applicationForm" method="post" action="{{ url('/application/applicant/create') }}" enctype="multipart/form-data" novalidate>
-                                    @csrf
-                                    <div class="tab-content">
-                                        <!-- Tab 1 -->
-                                        <div class="tab-pane fade show active" id="maklumat_permohonan" role="tabpanel">
-                                            <div class="form-group row">
-                                                <label class="col-md-3 col-form-label text-md-right">Nama Bilik/Lokasi</label>
-                                                <div class="col-md-9">
-                                                    <select id="room" name="room" class="form-control select-search @error('room') is-invalid @enderror" data-placeholder="Pilih Nama Bilik/Lokasi">
-                                                        <option></option>
-                                                        @foreach ($rooms as $room)
-                                                            <option value="{{ $room->id }}"
-                                                                data-auto="{{ $room->is_auto }}"
-                                                                data-upload="{{ $room->is_upload }}"
-                                                                data-pantry="{{ $room->is_pantry }}"
-                                                                {{ old('room') == $room->id ? 'selected' : '' }}>
-                                                                {{ $room->nama }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('room')
+                            <!-- Tab Content -->
+                            <form id="applicationForm" method="post" action="{{ url('/application/applicant/create') }}" enctype="multipart/form-data" novalidate>
+                                @csrf
+                                <div class="tab-content">
+                                    <!-- Tab 1 -->
+                                    <div class="tab-pane fade show active" id="maklumat_permohonan" role="tabpanel">
+                                        <div class="form-group row">
+                                            <label class="col-md-3 col-form-label text-md-right">Nama Bilik/Lokasi</label>
+                                            <div class="col-md-9">
+                                                <select id="room" name="room" class="form-control select-search @error('room') is-invalid @enderror" data-placeholder="Pilih Nama Bilik/Lokasi">
+                                                    <option></option>
+                                                    @foreach ($rooms as $room)
+                                                        <option value="{{ $room->id }}"
+                                                            data-auto="{{ $room->is_auto }}"
+                                                            data-upload="{{ $room->is_upload }}"
+                                                            data-pantry="{{ $room->is_pantry }}"
+                                                            {{ old('room') == $room->id ? 'selected' : '' }}>
+                                                            {{ $room->nama }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('room')
+                                                    <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                        </div>
+                                        <div class="alert alert-info border-0 alert-dismissible"
+                                            id="div_alert_bilik_manual" style="display: none">
+                                            <button type="button" class="close" data-dismiss="alert"></button><i
+                                                class="icon-exclamation mr-1"></i>
+                                            <strong>Makluman : </strong> Bilik ini perlu mendapat kelulusan <u><b>secara
+                                            manual</b></u>
+                                            dari bahagian tersebut . Hanya permohonan VC akan diproses.
+                                        </div>
+
+                                        <div class="alert alert-warning border-0 alert-dismissible"
+                                            id="div_alert_bilik_sendiri" style="display: none">
+                                            <button type="button" class="close" data-dismiss="alert"></button>
+                                            <strong>Makluman : </strong> <b>Bilik sendiri</b> tidak perlu proses
+                                            kelulusan
+                                            bilik . Hanya permohonan VC akan diproses.
+                                        </div>
+
+                                        <div class="alert alert-warning border-0 alert-dismissible" id="div_alert_wifimiti" style="display: none">
+                                            <button type="button" class="close" data-dismiss="alert"></button>
+                                            <strong>Makluman : </strong> Sekiranya memerlukan Voucher <b>MITIWIFI_Guest</b>, sila emelkan permohonan kepada urki@miti.gov.my
+                                        </div>
+
+                                        <input type="hidden" id="is_auto" name="is_auto" value="{{ old('is_auto') }}">
+                                                <input type="hidden" id="is_upload" name="is_upload"
+                                                    value="{{ old('is_upload') }}">
+                                                <input type="hidden" id="is_pantry" name="is_pantry"
+                                                    value="{{ old('is_pantry') }}">
+
+                                        <table class="table table-borderless">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center" style="width: 25%;">Tarikh/Masa Mula</th>
+                                                    <th class="text-center" style="width: 25%;">Tarikh/Masa Tamat</th>
+                                                    <th style="width: 20%;">Ketersediaan/Tindakan</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="booking-rows">
+                                                @php
+                                                    $oldBookings = old('bookings', []);
+                                                @endphp
+
+                                                @if(count($oldBookings))
+                                                    @foreach($oldBookings as $i => $booking)
+                                                    <tr class="booking-row align-middle">
+                                                        <td>
+                                                            <div class="input-group">
+                                                                <input type="text"
+                                                                    name="bookings[{{ $i }}][start]"
+                                                                    class="form-control start-input"
+                                                                    value="{{ old("bookings.$i.start") }}"
+                                                                    placeholder="Pilih tarikh mula">
+                                                                <span class="input-group-text">
+                                                                    <i class="fas fa-calendar-alt"></i>
+                                                                </span>
+
+                                                                @error("bookings.$i.start")
+                                                                    <div class="input-group-append">
+                                                                        <span class="input-group-text bg-white text-danger" title="{{ $message }}">
+                                                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                @enderror
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group">
+
+                                                                <input type="text"
+                                                                    name="bookings[{{ $i }}][end]"
+                                                                    class="form-control end-input"
+                                                                    value="{{ old("bookings.$i.end") }}"
+                                                                    placeholder="Pilih tarikh tamat">
+                                                                    <span class="input-group-text">
+                                                                    <i class="fas fa-calendar-alt"></i>
+                                                                </span>
+
+                                                                @error("bookings.$i.end")
+                                                                    <div class="input-group-append">
+                                                                        <span class="input-group-text bg-white text-danger" title="{{ $message }}">
+                                                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                @enderror
+                                                            </div>
+                                                        </td>
+
+                                                        <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
+                                                            <span class="availability-status small">
+                                                                <!-- <i class="fas fa-times-circle text-danger"></i> -->
+                                                            </span>
+                                                            <a href="javascript:void(0)" class="text-danger remove-row" style="display: none;" title="Padam baris">
+                                                                <i class="fas fa-trash-alt fa-sm"></i>
+                                                            </a>
+                                                        </td>
+
+                                                    </tr>
+
+                                                    @endforeach
+                                                @else
+                                                    {{-- kalau tiada old(), render default row index 0 --}}
+                                                    <tr class="booking-row align-middle">
+                                                        <td>
+                                                            <div class="input-group">
+                                                                <input type="text"
+                                                                    name="bookings[0][start]"
+                                                                    class="form-control start-input"
+                                                                    value=""
+                                                                    placeholder="Pilih tarikh mula">
+
+                                                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="input-group">
+                                                                <input type="text"
+                                                                    name="bookings[0][end]"
+                                                                    class="form-control end-input"
+                                                                    value=""
+                                                                    placeholder="Pilih tarikh tamat">
+
+                                                                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                                            </div>
+                                                        </td>
+                                                        <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
+                                                            <span class="availability-status small"></span>
+                                                            <a href="javascript:void(0)" class="text-danger remove-row" style="display:none;" title="Padam baris">
+                                                                <i class="fas fa-trash-alt fa-sm"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                @endif
+
+                                            </tbody>
+                                        </table>
+
+                                        <div class="col-md-12 col-form-label text-md-center">
+                                            <a href="javascript:void(0)" id="addRow"
+                                            title="Jika tempoh lebih 1 hari dan masa yang berbeza"
+                                            class="d-inline-flex align-items-center gap-2">
+                                                <i class="fas fa-plus-circle fa-lg"></i>Tambah Tarikh
+                                            </a>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="nama_mesyuarat"
+                                                class="col-md-3 col-form-label text-md-right">{{ __('Tajuk Mesyuarat/Program') }}</label>
+                                            <div class="col-md-9">
+                                                <input type="text" class="form-control @error('nama_mesyuarat') is-invalid @enderror" name="nama_mesyuarat" id="nama_mesyuarat"
+                                                    value="{{ old('nama_mesyuarat') }}">
+                                                    @error('nama_mesyuarat')
                                                         <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
                                                     @enderror
-                                                </div>
-
                                             </div>
-                                            <div class="alert alert-danger border-0 alert-dismissible"
-                                                id="div_alert_bilik_manual" style="display: none">
-                                                <button type="button" class="close" data-dismiss="alert"></button><i
-                                                    class="icon-exclamation mr-1"></i>
-                                                <strong>Makluman : </strong> Bilik ini perlu mendapat kelulusan secara
-                                                manual
-                                                dari bahagian tersebut . Hanya permohonan VC akan diproses.
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="kategori_pengerusi"
+                                                class="col-md-3 col-form-label text-md-right">{{ __('Kategori Pengerusi') }}</label>
+                                            <div class="col-md-9">
+                                                <select name="kategori_pengerusi" id="kategori_pengerusi"
+                                                    data-placeholder="Pilih Kategori Pengerusi"
+                                                    class="form-control select-search @error('kategori_pengerusi') is-invalid @enderror" onchange="kategoriPengerusi()">
+                                                    <option></option>
+                                                    <option value="YBM"
+                                                        @if (old('kategori_pengerusi') == 'YBM') selected @endif>
+                                                        YBM</option>
+                                                    <option value="Timbalan YBM"
+                                                        @if (old('kategori_pengerusi') == 'Timbalan YBM') selected @endif>Timbalan YBM
+                                                    </option>
+                                                    <option value="KSU"
+                                                        @if (old('kategori_pengerusi') == 'KSU') selected @endif>
+                                                        KSU</option>
+                                                    <option value="TKSU I"
+                                                        @if (old('kategori_pengerusi') == 'TKSU I') selected @endif>TKSU(I)
+                                                    </option>
+                                                    <option value="TKSU P"
+                                                        @if (old('kategori_pengerusi') == 'TKSU P') selected @endif>TKSU(P)
+                                                    </option>
+                                                    <option value="TKSU PP"
+                                                        @if (old('kategori_pengerusi') == 'TKSU PP') selected @endif>TKSU(PP)
+                                                    </option>
+                                                    <option value="0"
+                                                        @if (old('kategori_pengerusi') == '0') selected @endif>
+                                                        Lain-Lain</option>
+                                                </select>
+                                                @error('kategori_pengerusi')
+                                                    <div class="invalid-feedback">
+                                                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                                    </div>
+                                                @enderror
                                             </div>
+                                        </div>
 
-                                            <div class="alert alert-warning border-0 alert-dismissible"
-                                                id="div_alert_bilik_sendiri" style="display: none">
-                                                <button type="button" class="close" data-dismiss="alert"></button>
-                                                <strong>Makluman : </strong> <b>Bilik sendiri</b> tidak perlu proses
-                                                kelulusan
-                                                bilik . Hanya permohonan VC akan diproses.
-                                            </div>
-
-                                            <div class="alert alert-warning border-0 alert-dismissible" id="div_alert_wifimiti" style="display: none">
-                                                <button type="button" class="close" data-dismiss="alert"></button>
-                                                <strong>Makluman : </strong> Sekiranya memerlukan Voucher <b>MITIWIFI_Guest</b>, sila emelkan permohonan kepada urki@miti.gov.my
-                                            </div>
-
-                                            <input type="hidden" id="is_auto" name="is_auto" value="{{ old('is_auto') }}">
-                                                    <input type="hidden" id="is_upload" name="is_upload"
-                                                        value="{{ old('is_upload') }}">
-                                                    <input type="hidden" id="is_pantry" name="is_pantry"
-                                                        value="{{ old('is_pantry') }}">
-
-                                            <table class="table table-borderless">
-                                                <thead>
-                                                    <tr>
-                                                        <th class="text-center" style="width: 25%;">Tarikh/Masa Mula</th>
-                                                        <th class="text-center" style="width: 25%;">Tarikh/Masa Tamat</th>
-                                                        <th style="width: 20%;">Ketersediaan/Tindakan</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="booking-rows">
-                                                    @php
-                                                        $oldBookings = old('bookings', []);
-                                                    @endphp
-
-                                                    @if(count($oldBookings))
-                                                        @foreach($oldBookings as $i => $booking)
-                                                        <tr class="booking-row align-middle">
-                                                            <td>
-                                                                <div class="input-group">
-                                                                    <input type="text"
-                                                                        name="bookings[{{ $i }}][start]"
-                                                                        class="form-control start-input"
-                                                                        value="{{ old("bookings.$i.start") }}"
-                                                                        placeholder="Pilih tarikh mula">
-                                                                    <span class="input-group-text">
-                                                                        <i class="fas fa-calendar-alt"></i>
-                                                                    </span>
-
-                                                                    @error("bookings.$i.start")
-                                                                        <div class="input-group-append">
-                                                                            <span class="input-group-text bg-white text-danger" title="{{ $message }}">
-                                                                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                                            </span>
-                                                                        </div>
-                                                                    @enderror
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="input-group">
-
-                                                                    <input type="text"
-                                                                        name="bookings[{{ $i }}][end]"
-                                                                        class="form-control end-input"
-                                                                        value="{{ old("bookings.$i.end") }}"
-                                                                        placeholder="Pilih tarikh tamat">
-                                                                        <span class="input-group-text">
-                                                                        <i class="fas fa-calendar-alt"></i>
-                                                                    </span>
-
-                                                                    @error("bookings.$i.end")
-                                                                        <div class="input-group-append">
-                                                                            <span class="input-group-text bg-white text-danger" title="{{ $message }}">
-                                                                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                                            </span>
-                                                                        </div>
-                                                                    @enderror
-                                                                </div>
-                                                            </td>
-
-                                                            <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
-                                                                <span class="availability-status small">
-                                                                    <!-- <i class="fas fa-times-circle text-danger"></i> -->
-                                                                </span>
-                                                                <a href="javascript:void(0)" class="text-danger remove-row" style="display: none;" title="Padam baris">
-                                                                    <i class="fas fa-trash-alt fa-sm"></i>
-                                                                </a>
-                                                            </td>
-
-                                                        </tr>
-
-                                                        @endforeach
-                                                    @else
-                                                        {{-- kalau tiada old(), render default row index 0 --}}
-                                                        <tr class="booking-row align-middle">
-                                                            <td>
-                                                                <div class="input-group">
-                                                                    <input type="text"
-                                                                        name="bookings[0][start]"
-                                                                        class="form-control start-input"
-                                                                        value=""
-                                                                        placeholder="Pilih tarikh mula">
-
-                                                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="input-group">
-                                                                    <input type="text"
-                                                                        name="bookings[0][end]"
-                                                                        class="form-control end-input"
-                                                                        value=""
-                                                                        placeholder="Pilih tarikh tamat">
-
-                                                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                                                </div>
-                                                            </td>
-                                                            <td style="display: flex; align-items: center; gap: 6px; font-size: 1.25rem;">
-                                                                <span class="availability-status small"></span>
-                                                                <a href="javascript:void(0)" class="text-danger remove-row" style="display:none;" title="Padam baris">
-                                                                    <i class="fas fa-trash-alt fa-sm"></i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    @endif
-
-                                                </tbody>
-                                            </table>
-
-                                            <div class="col-md-12 col-form-label text-md-center">
-                                                <a href="javascript:void(0)" id="addRow"
-                                                title="Jika tempoh lebih 1 hari dan masa yang berbeza"
-                                                class="d-inline-flex align-items-center gap-2">
-                                                    <i class="fas fa-plus-circle fa-lg"></i>Tambah Tarikh
-                                                </a>
-                                            </div>
-
+                                        <div id="div_pengerusi" style="display: none">
                                             <div class="form-group row">
-                                                <label for="nama_mesyuarat"
-                                                    class="col-md-3 col-form-label text-md-right">{{ __('Tajuk Mesyuarat/Program') }}</label>
+                                                <label for="nama_pengerusi"
+                                                    class="col-md-3 col-form-label text-md-right">{{ __('Nama Pengerusi') }}</label>
                                                 <div class="col-md-9">
-                                                    <input type="text" class="form-control @error('nama_mesyuarat') is-invalid @enderror" name="nama_mesyuarat" id="nama_mesyuarat"
-                                                        value="{{ old('nama_mesyuarat') }}">
-                                                        @error('nama_mesyuarat')
+                                                    <input class="form-control @error('nama_pengerusi') is-invalid @enderror" type="text" id="nama_pengerusi"
+                                                        name="nama_pengerusi"
+                                                        value="{{ old('nama_pengerusi') }}">
+                                                        @error('nama_pengerusi')
                                                             <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
                                                         @enderror
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            <div class="form-group row">
-                                                <label for="kategori_pengerusi"
-                                                    class="col-md-3 col-form-label text-md-right">{{ __('Kategori Pengerusi') }}</label>
-                                                <div class="col-md-9">
-                                                    <select name="kategori_pengerusi" id="kategori_pengerusi"
-                                                        data-placeholder="Pilih Kategori Pengerusi"
-                                                        class="form-control select-search @error('kategori_pengerusi') is-invalid @enderror" onchange="kategoriPengerusi()">
-                                                        <option></option>
-                                                        <option value="YBM"
-                                                            @if (old('kategori_pengerusi') == 'YBM') selected @endif>
-                                                            YBM</option>
-                                                        <option value="Timbalan YBM"
-                                                            @if (old('kategori_pengerusi') == 'Timbalan YBM') selected @endif>Timbalan YBM
-                                                        </option>
-                                                        <option value="KSU"
-                                                            @if (old('kategori_pengerusi') == 'KSU') selected @endif>
-                                                            KSU</option>
-                                                        <option value="TKSU I"
-                                                            @if (old('kategori_pengerusi') == 'TKSU I') selected @endif>TKSU(I)
-                                                        </option>
-                                                        <option value="TKSU P"
-                                                            @if (old('kategori_pengerusi') == 'TKSU P') selected @endif>TKSU(P)
-                                                        </option>
-                                                        <option value="TKSU PP"
-                                                            @if (old('kategori_pengerusi') == 'TKSU PP') selected @endif>TKSU(PP)
-                                                        </option>
-                                                        <option value="0"
-                                                            @if (old('kategori_pengerusi') == '0') selected @endif>
-                                                            Lain-Lain</option>
-                                                    </select>
-                                                    @error('kategori_pengerusi')
-                                                        <div class="invalid-feedback">
-                                                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                                        </div>
+                                        <div class="alert alert-warning" role="alert" id="alert_bil_tempahan"
+                                            style="display:none">
+                                            <b>Mesej</b>
+                                            {{-- <li>Had maksimum <b>50 pax</b> (TKSU/KSU/YBTM/YBM)</li>
+                                            <li>Had maksimum <b>35 pax</b> (Lain-lain)</li>
+                                            <li>Sekiranya melebihi had maksimum, bahagian perlu membuat tempahan katerer
+                                                luar</li>
+                                            <li>Had maksimum dikecualikan bagi Mesyuarat Pengurusan dan Mesyuarat
+                                                <i>Post-Cabinet.</i>
+                                            </li> --}}
+                                            <li>Had maksimum sajian mengikut <u>kapasiti bilik</u>.</li>
+                                            <li>Had peruntukan sajian pantri dalaman hanya untuk <u>Mesyuarat Rasmi
+                                                    Sahaja</u>.</li>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label for="bil_tempah"
+                                                class="col-md-3 col-form-label text-md-right">{{ __('Bil.Tempahan/Kehadiran') }}</label>
+                                            <div class="col-md-2">
+                                                <input id="bil_tempah" type="text" class="form-control @error('bilangan_tempahan') is-invalid @enderror"
+                                                    name="bilangan_tempahan" value="{{ old('bilangan_tempahan') }}"
+                                                    autocomplete="bilangan_tempahan"
+                                                    placeholder="Bil. Orang">
+                                                    @error('bilangan_tempahan')
+                                                        <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
                                                     @enderror
-                                                </div>
-                                            </div>
 
-                                            <div id="div_pengerusi" style="display: none">
-                                                <div class="form-group row">
-                                                    <label for="nama_pengerusi"
-                                                        class="col-md-3 col-form-label text-md-right">{{ __('Nama Pengerusi') }}</label>
-                                                    <div class="col-md-9">
-                                                        <input class="form-control @error('nama_pengerusi') is-invalid @enderror" type="text" id="nama_pengerusi"
-                                                            name="nama_pengerusi"
-                                                            value="{{ old('nama_pengerusi') }}">
-                                                            @error('nama_pengerusi')
-                                                                <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
-                                                            @enderror
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="alert alert-warning" role="alert" id="alert_bil_tempahan"
-                                                style="display:none">
-                                                <b>Mesej</b>
-                                                {{-- <li>Had maksimum <b>50 pax</b> (TKSU/KSU/YBTM/YBM)</li>
-                                                <li>Had maksimum <b>35 pax</b> (Lain-lain)</li>
-                                                <li>Sekiranya melebihi had maksimum, bahagian perlu membuat tempahan katerer
-                                                    luar</li>
-                                                <li>Had maksimum dikecualikan bagi Mesyuarat Pengurusan dan Mesyuarat
-                                                    <i>Post-Cabinet.</i>
-                                                </li> --}}
-                                                <li>Had maksimum sajian mengikut <u>kapasiti bilik</u>.</li>
-                                                <li>Had peruntukan sajian pantri dalaman hanya untuk <u>Mesyuarat Rasmi
-                                                        Sahaja</u>.</li>
-                                            </div>
-
-                                            <div class="form-group row">
-                                                <label for="bil_tempah"
-                                                    class="col-md-3 col-form-label text-md-right">{{ __('Bil.Tempahan/Kehadiran') }}</label>
-                                                <div class="col-md-2">
-                                                    <input id="bil_tempah" type="text" class="form-control @error('bilangan_tempahan') is-invalid @enderror"
-                                                        name="bilangan_tempahan" value="{{ old('bilangan_tempahan') }}"
-                                                        autocomplete="bilangan_tempahan"
-                                                        placeholder="Bil. Orang">
-                                                        @error('bilangan_tempahan')
-                                                            <div class="invalid-feedback"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div>
-                                                        @enderror
-
-                                                </div>
-                                            </div>
-
-                                            <div class="text-center">
-                                                <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya</a>
-                                            </div>
-
-                                        </div>
-
-                                        <!-- Tab 2 -->
-                                        <div class="tab-pane fade" id="maklumat_bilik" role="tabpanel">
-                                            @include('applications.room.create')
-                                            <div class="text-center">
-                                                <a href="#maklumat_permohonan" class="btn btn-secondary" id="prevBtn" data-toggle="tab">Kembali</a>
-                                                <a href="#maklumat_vc" class="btn btn-primary" id="nextBtn2" data-toggle="tab">Seterusnya</a>
                                             </div>
                                         </div>
 
-                                        <!-- Tab 3 -->
-                                        <div class="tab-pane fade" id="maklumat_vc" role="tabpanel">
-                                            @include('applications.vc.create')
-                                            <div class="card-footer">
-                                                <fieldset>
-                                                    <legend><b><i>Perakuan</i></b></legend>
-                                                    <div>
-                                                        <div class="form-group">
-                                                            <div class="custom-control custom-checkbox">
-                                                                <input type="checkbox" class="custom-control-input @error('perakuan') is-invalid @enderror" name="perakuan"
-                                                                    id="perakuan" value="1">
-                                                                <label class="custom-control-label" for="perakuan">Pemohon
-                                                                    bertanggungjawab di
-                                                                    atas maklumat dan permohonan yang telah dibuat.</label>
-                                                            </div>
-                                                        </div>
-                                                        @error('perakuan')
-                                                            <div class="invalid-feedback d-block">
-                                                                <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                                            </div>
-                                                        @enderror
+                                        <div class="text-center">
+                                            <a href="#" id="nextBtn" class="btn btn-primary">Seterusnya</a>
+                                        </div>
 
-                                                    </div>
-                                                </fieldset>
-                                                <div class="text-center">
-                                                    <a class="btn btn-secondary" href="#maklumat_bilik" onclick="previousVc()"
-                                                        id="preBtn2" role="button">Kembali</a>
-                                                    <button type="submit" id="submitButton" class="btn btn-primary submit-btn">
-                                                        Hantar Permohonan
-                                                    </button>
-                                                </div>
-                                            </div>
+                                    </div>
 
+                                    <!-- Tab 2 -->
+                                    <div class="tab-pane fade" id="maklumat_bilik" role="tabpanel">
+                                        @include('applications.room.create')
+                                        <div class="text-center">
+
+                                            <a href="#maklumat_permohonan" class="btn btn-secondary" id="prevBtn" data-toggle="tab">Kembali</a>
+
+                                            <a href="#maklumat_vc" class="btn btn-primary" id="nextBtn2" data-toggle="tab">Seterusnya</a>
                                         </div>
                                     </div>
 
-                                </form>
-                            </div>
-                        </div>
+                                    <!-- Tab 3 -->
+                                    <div class="tab-pane fade" id="maklumat_vc" role="tabpanel">
+                                        @include('applications.vc.create')
+                                        <div class="card-footer">
+                                            <fieldset>
+                                                <legend><b><i>Perakuan</i></b></legend>
+                                                <div>
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input type="checkbox" class="custom-control-input @error('perakuan') is-invalid @enderror" name="perakuan"
+                                                                id="perakuan" value="1">
+                                                            <label class="custom-control-label" for="perakuan">Pemohon
+                                                                bertanggungjawab di
+                                                                atas maklumat dan permohonan yang telah dibuat.</label>
+                                                        </div>
+                                                    </div>
+                                                    @error('perakuan')
+                                                        <div class="invalid-feedback d-block">
+                                                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                                        </div>
+                                                    @enderror
 
+                                                </div>
+                                            </fieldset>
+                                            <div class="text-center">
+
+                                                <a class="btn btn-secondary" href="#maklumat_bilik"
+                                                    id="prevBtn2" role="button">Kembali</a>
+
+                                                <button type="submit" id="submitButton" class="btn btn-primary submit-btn">
+                                                    Hantar Permohonan
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
                     </div>
 
-            </div>
+                </div>
 
+            </div>
         </div>
 
     </body>
@@ -642,7 +629,6 @@
         } else {
             form_vc.style.display = "none";
         }
-
     }
 
     function markInvalidSequenceRows() {
@@ -962,23 +948,30 @@
                 const startTime = startDate.getHours() * 60 + startDate.getMinutes();
                 const endTime = endDate.getHours() * 60 + endDate.getMinutes();
 
-                if (startTime >= endTime) {
-                    const message = "Masa tamat mesti selepas masa mula.";
-                    startInput?.classList.add('error-border');
-                    endInput?.classList.add('error-border');
+                if (startDate == endDate) {
+                    if (startTime >= endTime) {
+                        const message = "Masa tamat mesti selepas masa mula.";
+                        startInput?.classList.add('error-border');
+                        endInput?.classList.add('error-border');
 
-                    statusSpan.innerHTML = `<i class="fas fa-exclamation-triangle text-danger fa-lg" title="${message}"></i>
-                        <span style="font-size: 9px; color: red; margin-left: 4px;">${message}</span>`;
-                    statusSpan.setAttribute('data-status', 'time-error');
-                    return;
+                        statusSpan.innerHTML = `
+                            <i class="fas fa-exclamation-triangle text-danger fa-lg error-icon" title="${message}"></i>
+                            <span style="font-size: 9px; color: red; margin-left: 4px;">${message}</span>
+                        `;
+                        statusSpan.setAttribute('data-status', 'time-error');
 
-                    const icon = statusSpan.querySelector('.error-icon');
-                    if (icon) {
-                        icon.addEventListener('click', () => {
-                            alert("Sila pastikan masa tamat lebih lewat daripada masa mula (tidak melebihi 24 jam).");
-                        });
+                        // 🔹 Tambah event listener sebelum return
+                        const icon = statusSpan.querySelector('.error-icon');
+                        if (icon) {
+                            icon.addEventListener('click', () => {
+                                alert("Sila pastikan masa tamat lebih lewat daripada masa mula (tidak melebihi 24 jam).");
+                            });
+                        }
+
+                        return; // hentikan semakan
                     }
                 }
+
             }
 
             // ✅ Semakan 4: Urutan sequential (guna semua rows)
@@ -1093,6 +1086,21 @@
                     statusSpan.removeAttribute('data-status');
                 }
                 return;
+            }
+
+            // 🟡 Dapatkan is_auto (dari data attribute atau hidden input)
+            const isAuto = document.querySelector('[name="is_auto"]')?.value || 'Y';
+
+            // console.log('isAuto');
+            console.log(isAuto);
+
+            // 🟢 Kalau bilik perlu mohon manual (is_auto == 'N')
+            if (isAuto === 'N') {
+                statusSpan.innerHTML = `
+                    <span class="badge badge-secondary" style="font-size: 10px;">Tempahan bilik secara manual</span>
+                `;
+                statusSpan.setAttribute('data-status', 'manual');
+                return; // hentikan fungsi di sini
             }
 
             statusSpan.innerHTML = `
@@ -1291,10 +1299,37 @@
     //     }
     // });
 
-
     });
 
+</script>
 
+<!-- Sweetalert Submit Permohonan -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnSubmit = document.querySelector('.submit-btn');
+
+        if (btnSubmit) {
+            btnSubmit.addEventListener('click', function (e) {
+                e.preventDefault(); // elak terus submit
+
+                Swal.fire({
+                    title: 'Mesej Pengesahan?',
+                    text: 'Anda pasti untuk menghantar permohonan ini?',
+                    // icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hantar',
+                    cancelButtonText: 'Tidak',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // ✅ Submit form bila pengguna sahkan
+                        e.target.closest('form').submit();
+                    }
+                });
+            });
+        }
+    });
 </script>
 
 @endsection

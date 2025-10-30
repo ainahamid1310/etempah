@@ -70,23 +70,22 @@
     <script src="/global_assets/js/demo_pages/datatables_sorting.js"></script>
     <script src="/global_assets/js/plugins/forms/selects/bootstrap_multiselect.js"></script>
     <script src="/global_assets/js/demo_pages/form_multiselect.js"></script>
-    <script src="/global_assets/js/demo_pages/form_dual_listboxes.js"></script>
-    <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
+    <script src="/global_assets/js/demo_pages/form_dual_listboxes.js"></script>   
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- /theme JS files -->
 
-<style>
-    #time-fields {
-    display: block;
-    margin-top: 20px;
-}
+    <style>
+        #time-fields {
+        display: block;
+        margin-top: 20px;
+    }
 
-#time-fields div {
-    margin-bottom: 10px;
-}
+    #time-fields div {
+        margin-bottom: 10px;
+    }
 
-</style>
-    @yield('js_extensions')
+    </style>
+        @yield('js_extensions')
 
 </head>
 

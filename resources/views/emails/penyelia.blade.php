@@ -53,10 +53,11 @@
             <table cellpadding="0" cellspacing="0">
                 @foreach ($senarai_tarikh as $index => $tarikh)
                     <tr>
-                        <td style="vertical-align: top;">{{ $index + 1 }})</td>
+                        <td style="vertical-align: top;">{{ $index + 1 }})&nbsp;</td>
                         <td>
                             {{ $tarikh['tarikh_mula'] }} hingga {{ $tarikh['tarikh_hingga'] }}
                             ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }})
+                            - {{ $tarikh['status_room_id'] ?? '-' }}
                         </td>
                     </tr>
                 @endforeach

@@ -15,7 +15,7 @@
 
 <p>Tuan/Puan,</p>
 <p>
-    penyelia_vc_batal
+    
     Adalah dimaklumkan bahawa permohonan {{ $action_penyelia2 }} tempahan <b>{{ $tempahan }} </b> telah
     <b>dibatalkan</b>.
 
@@ -53,10 +53,11 @@
             <table cellpadding="0" cellspacing="0">
                 @foreach ($senarai_tarikh as $index => $tarikh)
                     <tr>
-                        <td style="vertical-align: top;">{{ $index + 1 }})</td>
+                        <td style="vertical-align: top;">{{ $index + 1 }})&nbsp;</td>
                         <td>
                             {{ $tarikh['tarikh_mula'] }} hingga {{ $tarikh['tarikh_hingga'] }}
                             ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }})
+                            - {{ $tarikh['status_room_id'] ?? '-' }}
                         </td>
                     </tr>
                 @endforeach
@@ -87,11 +88,11 @@
             <td>{{ $catatan_room }}</td>
         </tr>
 
-        <tr>
+        <!-- <tr>
             <td>Status Bilik</td>
             <td>:</td>
             <td>{{ $status_bilik }}</td>
-        </tr>
+        </tr> -->
 
         @if ($status_bilik_id == '4' || $status_bilik_id == '12' || $status_bilik_id == '13')
             <tr>
@@ -107,7 +108,26 @@
 <p><u><b>Maklumat VC</b></u></p>
 
 @if (!empty($webex))
+
     <table>
+        <tr>
+            <td style="vertical-align: top;">Tarikh/Masa</td>
+            <td style="vertical-align: top;">:</td>
+            <td>
+                <table cellpadding="0" cellspacing="0">
+                    @foreach ($senarai_tarikh as $index => $tarikh)
+                        <tr>
+                            <td style="vertical-align: top;">{{ $index + 1 }})&nbsp;</td>
+                            <td>
+                                {{ $tarikh['tarikh_mula'] }} hingga {{ $tarikh['tarikh_hingga'] }}
+                                ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }})
+                                - {{ $tarikh['status_vc_id'] ?? '-' }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </table>
+            </td>
+        </tr>
         <tr>
             <td>Akaun WEBEX</td>
             <td>:</td>
@@ -148,11 +168,11 @@
             </tr>
         @endif
 
-        <tr>
+        <!-- <tr>
             <td>Status VC</td>
             <td>:</td>
             <td>{{ $status_vc }}</td>
-        </tr>
+        </tr> -->
 
     </table>
 @else

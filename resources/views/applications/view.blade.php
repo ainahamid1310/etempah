@@ -279,7 +279,7 @@
                         <div class="text-center text-danger">- Tiada Permohonan VC -</div>
                         <br>
                         <br>
-                        <div class="text-center"><a href="/application/create_vc/{{ $application->id }}"><button
+                        <div class="text-center"><a href="/application/create_vc/{{ encrypt($application->batch_id) }}"><button
                                     type="button" class="btn btn-primary btn-sm" title="Mohon Bilik">Mohon VC
                                 </button></a></div>
                     @endif

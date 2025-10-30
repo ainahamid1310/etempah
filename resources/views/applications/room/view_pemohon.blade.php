@@ -4,10 +4,10 @@
 
         <div class="card bg-light">        
 
-            <div class="card-header bg-white d-flex justify-content-between">
+            <!-- <div class="card-header bg-white d-flex justify-content-between">
                 <strong>Maklumat <a href="#" data-toggle="modal" data-target="#modal_default"> Pemohon </a><i
                         class="icon-info22 mr-3"></i></strong>
-            </div>
+            </div> -->
 
             <div class="card-body ps-3">
                 <div class="mb-3">

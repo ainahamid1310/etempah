@@ -51,10 +51,11 @@
             <table cellpadding="0" cellspacing="0">
                 @foreach ($senarai_tarikh as $index => $tarikh)
                     <tr>
-                        <td style="vertical-align: top;">{{ $index + 1 }})</td>
+                        <td style="vertical-align: top;">{{ $index + 1 }})&nbsp;</td>
                         <td>
                             {{ $tarikh['tarikh_mula'] }} hingga {{ $tarikh['tarikh_hingga'] }}
-                            ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }})
+                            ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }}) 
+                            - {{ $tarikh['status_room_id'] ?? '-' }}
                         </td>
                     </tr>
                 @endforeach
@@ -85,11 +86,11 @@
             <td>{{ $catatan_room }}</td>
         </tr>
 
-        <tr>
+        <!-- <tr>
             <td>Status Bilik</td>
             <td>:</td>
             <td>{{ $status_bilik }}</td>
-        </tr>
+        </tr> -->
 
         @if ($status_bilik_id == '4' || $status_bilik_id == '12' || $status_bilik_id == '13')
             <tr>
@@ -107,6 +108,25 @@
 
 @if (!empty($webex))
     <table>
+
+        <tr>
+            <td style="vertical-align: top;">Tarikh/Masa</td>
+            <td style="vertical-align: top;">:</td>
+            <td>
+                <table cellpadding="0" cellspacing="0">
+                    @foreach ($senarai_tarikh as $index => $tarikh)
+                        <tr>
+                            <td style="vertical-align: top;">{{ $index + 1 }})&nbsp;</td>
+                            <td>
+                                {{ $tarikh['tarikh_mula'] }} hingga {{ $tarikh['tarikh_hingga'] }}
+                                ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }})
+                                - {{ $tarikh['status_vc_id'] ?? '-' }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </table>
+            </td>
+        </tr>
         <tr>
             <td>Akaun WEBEX</td>
             <td>:</td>
@@ -134,20 +154,14 @@
             <td>{{ $catatan_vc }}</td>
         </tr>
 
-	    {{-- @if ($status_vc_id == 3 ||
-            $status_vc_id == 4 ||
-            $status_vc_id == 5 ||
-            $status_vc_id == 10 ||
-            $status_vc_id == 11 ||
-            $status_vc_id == 12) --}}
+	  
             <tr>
                 <td>Catatan Pentadbir VC</td>
                 <td>:</td>
                 <td>{{ $catatan_penyelia_vc }}</td>
             </tr>
-        {{-- @endif --}}
-
-        <tr>
+     
+        <!-- <tr>
             <td>Status VC</td>
             <td>:</td>         
 
@@ -155,7 +169,7 @@
                 {{ ($status_vc_id == 4 && is_null($vc_komen_ditolak)) ? '-' : ($status_vc ?? '-') }}
             </td>
 
-        </tr>
+        </tr> -->
 
         @if ($status_vc_id == 4 && !is_null($vc_komen_ditolak))
         <tr>

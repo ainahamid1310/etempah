@@ -54,10 +54,11 @@
             <table cellpadding="0" cellspacing="0">
                 @foreach ($senarai_tarikh as $index => $tarikh)
                     <tr>
-                        <td style="vertical-align: top;">{{ $index + 1 }})</td>
+                        <td style="vertical-align: top;">{{ $index + 1 }})&nbsp;</td>
                         <td>
                             {{ $tarikh['tarikh_mula'] }} hingga {{ $tarikh['tarikh_hingga'] }}
-                            ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }})
+                            ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }}) 
+                            - {{ $tarikh['status_room_id'] ?? '-' }}
                         </td>
                     </tr>
                 @endforeach
@@ -103,11 +104,11 @@
                 <td>{{ $catatan_room_penyelia }}</td>
             </tr>
         @endif
-        <tr>
+        <!-- <tr>
             <td>Status Bilik</td>
             <td>:</td>
             <td>{{ $status_bilik }}</td>
-        </tr>
+        </tr> -->
 
         @if ($status_bilik_id == '4' || $status_bilik_id == '12' || $status_bilik_id == '13')
             <tr>
@@ -124,6 +125,25 @@
 <p><u><b>Maklumat VC</b></u></p>
 <table>
     @if ($apply_vc == 1)
+
+        <tr>
+            <td style="vertical-align: top;">Tarikh/Masa</td>
+            <td style="vertical-align: top;">:</td>
+            <td>
+                <table cellpadding="0" cellspacing="0">
+                    @foreach ($senarai_tarikh as $index => $tarikh)
+                        <tr>
+                            <td style="vertical-align: top;">{{ $index + 1 }})&nbsp;</td>
+                            <td>
+                                {{ $tarikh['tarikh_mula'] }} hingga {{ $tarikh['tarikh_hingga'] }}
+                                ({{ $tarikh['masa_mula'] }} - {{ $tarikh['masa_hingga'] }})
+                                - {{ $tarikh['status_vc_id'] ?? '-' }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </table>
+            </td>
+        </tr>
         @if ($webex == 'YA')
             <tr>
                 <td>Akaun WEBEX</td>
@@ -189,14 +209,14 @@
             </tr>
         @endif
 
-        <tr>
+        <!-- <tr>
             <td>Status VC</td>
             <td>:</td>
             <td>
                 {{ $status_vc }}  @if(is_null($vc_komen_ditolak)) {{ $note ?? '' }} @endif                
             </td>
             
-        </tr>        
+        </tr>         -->
 
         @if(!empty($vc_komen_ditolak))
             <tr>

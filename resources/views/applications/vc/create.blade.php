@@ -2,7 +2,7 @@
     <div class="card card bg-light">
         <div class="card-header">
 
-            <div class="alert alert-danger border-0 alert-dismissible">
+            <div class="alert alert-info border-0 alert-dismissible">
                 <button type="button" class="close" data-dismiss="alert"></button><i class="icon-info22 mr-1"></i>
                 <strong>Perhatian : </strong> </i>Sila <i>'tick'</i> untuk membuat tempahan/permohonan <b>Video Conference (VC)</b>.
             </div>
@@ -95,9 +95,14 @@
                 <div class="form-group row">
                     <label for="catatan" class="col-md-3 col-form-label text-md-right">{{ __('Catatan') }}</label>
                     <div class="col-md-9">
-                        <textarea rows="3" cols="3" class="form-control" placeholder="1.Sila nyatakan masa mula sesi VC&#10;2.Lain-lain catatan" name="catatan_vc">{{ old('catatan_vc') }}</textarea>
+                        <textarea rows="3" cols="3" class="form-control" placeholder="1.Sila nyatakan masa mula sesi VC&#10;2.Lain-lain catatan" name="catatan_vc">{{ old('catatan_vc') }}</textarea>  
+                        <p class="text-muted mb-2" style="font-style: italic; font-size: 0.9rem;">
+                            <i class="fas fa-info-circle text-warning"></i>
+                            <span class="ml-1">ID Webex akan diberikan dalam tempoh <b>5 hari bekerja</b> sebelum tarikh program bermula.</span>
+                        </p>
                     </div>
-                    <span class="text-warning">Nota : ID WEBEX hanya akan diberikan dalam tempoh 5 hari bekerja sebelum tarikh program/mesyuarat bermula</span>
+                                    
+
                 </div>
 
             </div>
